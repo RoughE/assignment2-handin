@@ -2,6 +2,7 @@
 
 var _ = require('lodash');
 var fs = require('fs');
+var readline = require('readline');
 
 var argv = require('yargs')
     .usage('Usage: dropbox [options]')
@@ -75,18 +76,54 @@ function checkForChanges(){
         writePipeline.exec(rslt);
     });
 }
-
+var t;
 function scheduleChangeCheck(when,repeat){
-    setTimeout(function(){
+    t = setTimeout(function(){
         checkForChanges();
 
         if(repeat){scheduleChangeCheck(when,repeat)}
     },when);
 }
 
+// To add valid operations, map user input to the desired function
+var userOps = {
+  test: function () { console.log('Test'); }
+};
+
+function getUserInput(){
+    console.log('\nInput a command. Type "help" for available commands or "quit" to quit\n');
+
+    var rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+
+    rl.prompt();
+    rl.on('line', function(line) {
+        var trimmedLine = line.trim();
+
+        if(trimmedLine == 'quit') {
+            rl.close();
+            clearTimeout(t);
+            dnodeClient.end();
+            return;
+        } else if (trimmedLine == 'help') {
+            for (var op in userOps) {
+                if (userOps.hasOwnProperty(op)) {
+                    console.log(' * ' + op);
+                }
+            }
+        } else if (userOps.hasOwnProperty(trimmedLine)) {
+            userOps[trimmedLine]();
+        } else {
+            console.log("Unknown option");
+        }
+        rl.prompt();
+    });
+}
+
 dnodeClient.connect({host:argv.server, port:argv.port}, function(handler){
     sync.fsHandlers.dnode = handler;
     scheduleChangeCheck(1000,true);
+    getUserInput();
 });
-
-
