@@ -1,0 +1,1 @@
+save log diffs and times of changed files whenever syncs are made
