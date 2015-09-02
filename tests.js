@@ -61,6 +61,7 @@ test({name:"Sync Module"}, function(tester) {
             msg: "The src should need test2.txt sync'd to it"
         }
     ).expectThat(
+      // TODO: fix this test
         {
             checkAsync: function (cb) {
                 sync.compare(directory1, directory2, sync.filesMatchNameAndSize, function(rslt){
