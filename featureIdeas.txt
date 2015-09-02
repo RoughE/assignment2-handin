@@ -1,0 +1,4 @@
+Brainstorm:
+	
+	send email notifications when updates are made
+	detail what exactly was changed 
