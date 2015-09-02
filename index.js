@@ -1,4 +1,6 @@
 #! /usr/bin/env node
+// Troy Janikowski
+// CS 4278
 
 var _ = require('lodash');
 var fs = require('fs');
