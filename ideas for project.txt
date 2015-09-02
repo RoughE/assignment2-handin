@@ -1,0 +1,5 @@
+ideas for project
+
+1. list all files that are not synced together
+2. list all files that were added
+3. keep a log of all the changes made and when?
