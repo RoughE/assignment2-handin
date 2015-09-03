@@ -2,6 +2,7 @@
 
 var _ = require('lodash');
 var fs = require('fs');
+var chokidar = require('chokidar');
 
 var argv = require('yargs')
     .usage('Usage: dropbox [options]')
@@ -76,17 +77,53 @@ function checkForChanges(){
     });
 }
 
-function scheduleChangeCheck(when,repeat){
-    setTimeout(function(){
-        checkForChanges();
-
-        if(repeat){scheduleChangeCheck(when,repeat)}
-    },when);
+function fileChangeDetected(path){
+    console.log('File', path, 'has been modified');
+    checkForChanges();
 }
+
+function directoryChangeDetected(path){
+    console.log('Directory', path, 'has been modified');
+    checkForChanges();
+}
+
+var watcher1 = chokidar.watch(argv.directory1, {
+    persistent: true
+});
+var watcher2 = chokidar.watch(argv.directory2, {
+    persistent: true
+});
+
+watcher1
+  .on('add', fileChangeDetected)
+  .on('change', fileChangeDetected)
+  .on('unlink', fileChangeDetected)
+  .on('addDir', directoryChangeDetected)
+  .on('unlinkDir', directoryChangeDetected)
+  .on('error', function(error) {
+    console.log('Uncaught error', error);
+  })
+  .on('ready', function() {
+    console.log('watching', argv.directory1);
+  });
+
+watcher2
+  .on('add', fileChangeDetected)
+  .on('change', fileChangeDetected)
+  .on('unlink', fileChangeDetected)
+  .on('addDir', directoryChangeDetected)
+  .on('unlinkDir', directoryChangeDetected)
+  .on('error', function(error) {
+    console.log('Uncaught error', error);
+  })
+  .on('ready', function() {
+    console.log('watching', argv.directory2);
+  });
+
 
 dnodeClient.connect({host:argv.server, port:argv.port}, function(handler){
     sync.fsHandlers.dnode = handler;
-    scheduleChangeCheck(1000,true);
+    checkForChanges();
 });
 
 
