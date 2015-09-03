@@ -1,1 +1,3 @@
 save log diffs and times of changed files whenever syncs are made
+.gitignore style file/folder ignoring
+user statistics - frequency/scale of changes
