@@ -1,0 +1,4 @@
+add multiple logins
+when create log in, create folder in server folder that acts as the folder to sync
+when log in, sync files in client folder with appropriate server folder
+add all logins to MySQL database, hash passwords?
