@@ -23,7 +23,7 @@ var argv = require('yargs')
     .default('p',5004,"5004")
     .epilog('Apache License V2 2015, Jules White')
     .argv;
-
+//TODO add option to set a purely local file
 
 var sync = require('./lib/sync/sync');
 var dnodeClient = require("./lib/sync/sync-client");
@@ -31,6 +31,7 @@ var Pipeline = require("./lib/sync/pipeline").Pipeline;
 
 
 var syncFile = function(fromPath,toPath){
+    //TODO don't sync the files that are specified as local
     var srcHandler = sync.getHandler(fromPath);
     var trgHandler = sync.getHandler(toPath);
 
@@ -64,6 +65,7 @@ writePipeline.addAction({
 });
 
 function checkForChanges(){
+    //TODO ignore changes to files that shouldnt be synced(specified as local)
     var path1 = argv.directory1;
     var path2 = argv.directory2;
 
