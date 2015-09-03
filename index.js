@@ -76,6 +76,7 @@ function checkForChanges(){
         writePipeline.exec(rslt);
     });
 }
+
 var timer;
 function scheduleChangeCheck(when,repeat){
     timer = setTimeout(function(){
@@ -85,10 +86,31 @@ function scheduleChangeCheck(when,repeat){
     },when);
 }
 
+function del(fileName) {
+    if(!fileName){
+        console.log('Please enter a file to delete');
+        return;
+    }
+    var path1 = argv.directory1 + '/' + fileName;
+    var path2 = argv.directory2 + '/' + fileName;
+    var handler1 = sync.getHandler(path1);
+    var handler2 = sync.getHandler(path2);
+    try {
+        handler1.deleteFile(path1, function(){});
+        handler2.deleteFile(path2, function(){});
+    } catch (err) {
+        console.log(err.message);
+        return;
+    }
+    console.log('Deleting ' + fileName);
+}
+
 // To add valid operations, map user input to the desired function
 var userOps = {
-  test: function () { console.log('Test'); },
-  func: function (in1, in2) { console.log(in1 + ' and ' + in2); }
+    quit: null,
+    test: function () { console.log('Test'); },
+    func: function (in1, in2) { console.log(in1 + ' and ' + in2); },
+    delete: del
 };
 
 function getUserInput(){
