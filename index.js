@@ -36,6 +36,7 @@ var syncFile = function(fromPath,toPath){
 
     srcHandler.readFile(fromPath,function(base64Data){
         trgHandler.writeFile(toPath,base64Data,function(){
+            UpdLog(fromPath, Date.now().toString()); //Update Log call when syncing file
             console.log("Copied "+fromPath+" to "+toPath);
         })
     });
@@ -62,6 +63,23 @@ writePipeline.addAction({
         return data;
     }
 });
+
+//Feature Addition for Update Log
+function UpdLog(change, timestamp)
+{
+    //Get current timestamp
+    var utc = timestamp;
+    var d = new Date(0);
+    d.setUTCSeconds(utc);
+
+    //Create string for log
+    var str = 'Updated ' + change + ' - ' + d+'\n';
+
+    //Update consolelog.txt with change
+    fs.appendFile('changelog.txt', str , function (err) {
+        if (err) throw err;
+    });
+}
 
 function checkForChanges(){
     var path1 = argv.directory1;
