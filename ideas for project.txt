@@ -3,3 +3,5 @@ ideas for project
 1. list all files that are not synced together
 2. list all files that were added
 3. keep a log of all the changes made and when?
+4. keep a log of files that people do not want synced to dropbox.
+

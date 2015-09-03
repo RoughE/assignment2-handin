@@ -29,6 +29,8 @@ var sync = require('./lib/sync/sync');
 var dnodeClient = require("./lib/sync/sync-client");
 var Pipeline = require("./lib/sync/pipeline").Pipeline;
 
+var readline = require('readline');
+
 
 var syncFile = function(fromPath,toPath){
     var srcHandler = sync.getHandler(fromPath);
@@ -82,6 +84,24 @@ function scheduleChangeCheck(when,repeat){
 
         if(repeat){scheduleChangeCheck(when,repeat)}
     },when);
+}
+
+// Want to create a function that will never sync a specified file. User input so far.
+function fileNeverSync(){
+    console.log("Please enter a file to never sync. ");
+
+    var r1 = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+
+    r1.setPrompt('File name> ');
+    r1.prompt();
+    r1.on('line', function(line){
+        console.log("The file you do not want to sync is " + line);
+        r1.close();
+    })
+
 }
 
 dnodeClient.connect({host:argv.server, port:argv.port}, function(handler){
