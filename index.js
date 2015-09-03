@@ -3,6 +3,7 @@
 var _ = require('lodash');
 var fs = require('fs');
 var chokidar = require('chokidar');
+var readline = require('readline');
 
 var argv = require('yargs')
     .usage('Usage: dropbox [options]')
@@ -86,14 +87,14 @@ function changeDetected(change, path){
 var dir1 = argv.directory1.replace(/^.*?:\/\//, '');
 var dir2 = argv.directory2.replace(/^.*?:\/\//, '');
 
-var opts = {
+var watcherOpts = {
   ignored: '*.swp',   // Prevents issues when editing files with vim
   ignoreInitial: true,// Prevents checking for changes when first turned on for every file
   persistent: true    // Keeps running until program ends
 };
 
-var watcher1 = chokidar.watch(dir1, opts);
-var watcher2 = chokidar.watch(dir2, opts);
+var watcher1 = chokidar.watch(dir1, watcherOpts);
+var watcher2 = chokidar.watch(dir2, watcherOpts);
 
 watcher1
   .on('all', changeDetected)
@@ -114,9 +115,68 @@ watcher2
   });
 
 
+function del(fileName) {
+    if(!fileName){
+        console.log('Please enter a file to delete');
+        return;
+    }
+    var path1 = argv.directory1 + '/' + fileName;
+    var path2 = argv.directory2 + '/' + fileName;
+    var handler1 = sync.getHandler(path1);
+    var handler2 = sync.getHandler(path2);
+    try {
+        handler1.deleteFile(path1, function(){});
+        handler2.deleteFile(path2, function(){});
+    } catch (err) {
+        console.log(err.message);
+        return;
+    }
+    console.log('Deleting ' + fileName);
+}
+
+// To add valid operations, map user input to the desired function
+var userOps = {
+    quit: null,
+    test: function () { console.log('Test'); },
+    func: function (in1, in2) { console.log(in1 + ' and ' + in2); },
+    delete: del
+};
+
+function getUserInput(){
+    console.log('\nInput a command. Type "help" for available commands or "quit" to quit\n');
+
+    var rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+
+    rl.prompt();
+    rl.on('line', function(line) {
+        var args = line.trim().split(' ');
+        var operation = args.shift();
+
+        if(operation == 'quit') {
+            rl.close();
+            clearTimeout(timer);
+            dnodeClient.end();
+            return;
+        } else if (operation == 'help') {
+            for (var op in userOps) {
+                if (userOps.hasOwnProperty(op)) {
+                    console.log(' * ' + op);
+                }
+            }
+        } else if (userOps.hasOwnProperty(operation)) {
+            userOps[operation].apply(this, args);
+        } else {
+            console.log("Unknown option");
+        }
+        rl.prompt();
+    });
+}
+
 dnodeClient.connect({host:argv.server, port:argv.port}, function(handler){
     sync.fsHandlers.dnode = handler;
     checkForChanges();
+    getUserInput();
 });
-
-
