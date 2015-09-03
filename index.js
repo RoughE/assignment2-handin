@@ -76,9 +76,9 @@ function checkForChanges(){
         writePipeline.exec(rslt);
     });
 }
-var t;
+var timer;
 function scheduleChangeCheck(when,repeat){
-    t = setTimeout(function(){
+    timer = setTimeout(function(){
         checkForChanges();
 
         if(repeat){scheduleChangeCheck(when,repeat)}
@@ -87,7 +87,8 @@ function scheduleChangeCheck(when,repeat){
 
 // To add valid operations, map user input to the desired function
 var userOps = {
-  test: function () { console.log('Test'); }
+  test: function () { console.log('Test'); },
+  func: function (in1, in2) { console.log(in1 + ' and ' + in2); }
 };
 
 function getUserInput(){
@@ -100,21 +101,22 @@ function getUserInput(){
 
     rl.prompt();
     rl.on('line', function(line) {
-        var trimmedLine = line.trim();
+        var args = line.trim().split(' ');
+        var operation = args.shift();
 
-        if(trimmedLine == 'quit') {
+        if(operation == 'quit') {
             rl.close();
-            clearTimeout(t);
+            clearTimeout(timer);
             dnodeClient.end();
             return;
-        } else if (trimmedLine == 'help') {
+        } else if (operation == 'help') {
             for (var op in userOps) {
                 if (userOps.hasOwnProperty(op)) {
                     console.log(' * ' + op);
                 }
             }
-        } else if (userOps.hasOwnProperty(trimmedLine)) {
-            userOps[trimmedLine]();
+        } else if (userOps.hasOwnProperty(operation)) {
+            userOps[operation].apply(this, args);
         } else {
             console.log("Unknown option");
         }
