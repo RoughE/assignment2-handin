@@ -77,47 +77,40 @@ function checkForChanges(){
     });
 }
 
-function fileChangeDetected(path){
-    console.log('File', path, 'has been modified');
+function changeDetected(change, path){
+    console.log('Watcher detected', change, 'at path', path);
     checkForChanges();
 }
 
-function directoryChangeDetected(path){
-    console.log('Directory', path, 'has been modified');
-    checkForChanges();
-}
+// Removes file/dnode from beginning of path for watchers
+var dir1 = argv.directory1.replace(/^.*?:\/\//, '');
+var dir2 = argv.directory2.replace(/^.*?:\/\//, '');
 
-var watcher1 = chokidar.watch(argv.directory1, {
-    persistent: true
-});
-var watcher2 = chokidar.watch(argv.directory2, {
-    persistent: true
-});
+var opts = {
+  ignored: '*.swp',   // Prevents issues when editing files with vim
+  ignoreInitial: true,// Prevents checking for changes when first turned on for every file
+  persistent: true    // Keeps running until program ends
+};
+
+var watcher1 = chokidar.watch(dir1, opts);
+var watcher2 = chokidar.watch(dir2, opts);
 
 watcher1
-  .on('add', fileChangeDetected)
-  .on('change', fileChangeDetected)
-  .on('unlink', fileChangeDetected)
-  .on('addDir', directoryChangeDetected)
-  .on('unlinkDir', directoryChangeDetected)
+  .on('all', changeDetected)
   .on('error', function(error) {
     console.log('Uncaught error', error);
   })
   .on('ready', function() {
-    console.log('watching', argv.directory1);
+    console.log('watching', dir1);
   });
 
 watcher2
-  .on('add', fileChangeDetected)
-  .on('change', fileChangeDetected)
-  .on('unlink', fileChangeDetected)
-  .on('addDir', directoryChangeDetected)
-  .on('unlinkDir', directoryChangeDetected)
+  .on('all', changeDetected)
   .on('error', function(error) {
     console.log('Uncaught error', error);
   })
   .on('ready', function() {
-    console.log('watching', argv.directory2);
+    console.log('watching', dir2);
   });
 
 
