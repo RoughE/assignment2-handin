@@ -83,37 +83,40 @@ function changeDetected(change, path){
     checkForChanges();
 }
 
-// Removes file/dnode from beginning of path for watchers
-var dir1 = argv.directory1.replace(/^.*?:\/\//, '');
-var dir2 = argv.directory2.replace(/^.*?:\/\//, '');
-
 var watcherOpts = {
   ignored: '*.swp',   // Prevents issues when editing files with vim
   ignoreInitial: true,// Prevents checking for changes when first turned on for every file
   persistent: true    // Keeps running until program ends
 };
 
-var watcher1 = chokidar.watch(dir1, watcherOpts);
-var watcher2 = chokidar.watch(dir2, watcherOpts);
 
-watcher1
-  .on('all', changeDetected)
-  .on('error', function(error) {
-    console.log('Uncaught error', error);
-  })
-  .on('ready', function() {
-    console.log('watching', dir1);
-  });
+// Only watch local directories
+if(argv.directory1.indexOf('dnode') === -1){
+    // Removes file/dnode from beginning of path for watchers
+    var dir1 = argv.directory1.replace(/^.*?:\/\//, '');
+    var watcher1 = chokidar.watch(dir1, watcherOpts);
+    watcher1
+      .on('all', changeDetected)
+      .on('error', function(error) {
+        console.log('Uncaught error', error);
+      })
+      .on('ready', function() {
+        console.log('watching', dir1);
+      });
+}
 
-watcher2
-  .on('all', changeDetected)
-  .on('error', function(error) {
-    console.log('Uncaught error', error);
-  })
-  .on('ready', function() {
-    console.log('watching', dir2);
-  });
-
+if(argv.directory2.indexOf('dnode') === -1){
+    var dir2 = argv.directory2.replace(/^.*?:\/\//, '');
+    var watcher2 = chokidar.watch(dir2, watcherOpts);
+    watcher2
+      .on('all', changeDetected)
+      .on('error', function(error) {
+        console.log('Uncaught error', error);
+      })
+      .on('ready', function() {
+        console.log('watching', dir2);
+      });
+}
 
 function del(fileName) {
     if(!fileName){
