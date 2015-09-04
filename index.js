@@ -104,6 +104,46 @@ function fileNeverSync(){
 
 }
 
+// Wrote a function to write to text files.
+function writeFile(filenosync){
+    if(!fs.existsSync('neversyncfile.txt')){
+        fs.writeFile('neversyncfile.txt', filenosync + '\n', function(err){
+            if(err){
+                throw err;
+            }
+            console.log(filenosync + " added to no sync log.");
+        })
+    }
+    else{
+        fs.appendFile('neversyncfile.txt', filenosync + '\n', function(err)
+        {
+            if(err){
+                throw err;
+            }
+            console.log(filenosync + " added to no sync log.");
+        })
+    }
+}
+
+// Wrote a function to attempt to read a textfile and get the files not needed for sync.
+// Doesn't work right now, not sure how to read in file to list/array.
+function checkNoSyncFile(filename){
+    var instream = fs.createReadStream('neversyncfile.txt'),
+        outstream = new(require('stream'))(),
+        r1 = readline.createInterface(instream, outstream),
+        listInFile = [];
+
+    r1.on('line', function(line){
+        console.log(line);
+        listInFile.push(line);
+    });
+
+    var list = ['helloworld.txt', 'mekappa.txt'];
+    if(list.indexOf(filename) != -1){
+        console.log(filename + ' will not be synced');
+    }
+}
+
 dnodeClient.connect({host:argv.server, port:argv.port}, function(handler){
     sync.fsHandlers.dnode = handler;
     scheduleChangeCheck(1000,true);
