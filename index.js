@@ -86,6 +86,14 @@ function scheduleChangeCheck(when,repeat){
     },when);
 }
 
+function schedulePromptUserInput(when, repeat){
+    timer = setTimeout(function(){
+        getUserInput();
+
+        if(repeat){schedulePromptUserInput(when, repeat)}
+    }, when);
+}
+
 function del(fileName) {
     if(!fileName){
         console.log('Please enter a file to delete');
@@ -148,6 +156,6 @@ function getUserInput(){
 
 dnodeClient.connect({host:argv.server, port:argv.port}, function(handler){
     sync.fsHandlers.dnode = handler;
+    schedulePromptUserInput(5000,true);
     scheduleChangeCheck(1000,true);
-    getUserInput();
 });
