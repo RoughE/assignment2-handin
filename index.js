@@ -86,7 +86,8 @@ function scheduleChangeCheck(when,repeat){
     },when);
 }
 
-// Want to create a function that will never sync a specified file. User input so far.
+// Want to create a function that will never sync a specified file. User input so far that will
+// write to a text file and keep track of no sync files.
 function fileNeverSync(){
     console.log("Please enter a file to never sync. ");
 
@@ -99,12 +100,13 @@ function fileNeverSync(){
     r1.prompt();
     r1.on('line', function(line){
         console.log("The file you do not want to sync is " + line);
+        writeFile(line);
         r1.close();
     })
 
 }
 
-// Wrote a function to write to text files.
+// Wrote a function to write to text files given the user input.
 function writeFile(filenosync){
     if(!fs.existsSync('neversyncfile.txt')){
         fs.writeFile('neversyncfile.txt', filenosync + '\n', function(err){
@@ -125,23 +127,19 @@ function writeFile(filenosync){
     }
 }
 
-// Wrote a function to attempt to read a textfile and get the files not needed for sync.
-// Doesn't work right now, not sure how to read in file to list/array.
+// Wrote a function to take in a file name and check if it's in the no sync list.
 function checkNoSyncFile(filename){
-    var instream = fs.createReadStream('neversyncfile.txt'),
-        outstream = new(require('stream'))(),
-        r1 = readline.createInterface(instream, outstream),
-        listInFile = [];
+    var array = fs.readFileSync('neversyncfile.txt').toString().split('\n');
 
-    r1.on('line', function(line){
-        console.log(line);
-        listInFile.push(line);
-    });
-
-    var list = ['helloworld.txt', 'mekappa.txt'];
-    if(list.indexOf(filename) != -1){
-        console.log(filename + ' will not be synced');
+    if(array.indexOf(filename) === -1){
+        console.log(filename + " was not found in log.");
+        return false;
     }
+    else{
+        console.log(filename + " was found in log and will be synced.");
+        return true;
+    }
+
 }
 
 dnodeClient.connect({host:argv.server, port:argv.port}, function(handler){
