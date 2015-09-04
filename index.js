@@ -112,9 +112,17 @@ var userOps = {
     func: function (in1, in2) { console.log(in1 + ' and ' + in2); },
     delete: del,
     login: function (username, password) {
-        dnodeClient.connect({host:argv.server, port:argv.port}, function(handler){
-            sync.fsHandlers.dnode = handler;
-            scheduleChangeCheck(1000,true);
+        dnodeClient.connect({host:argv.server, port:argv.port}, function(handler, repeat){
+            console.log("Calling login function");
+            handler.login(username,password,function()
+            {
+                console.log("Login success");
+                sync.fsHandlers.dnode = handler;
+                scheduleChangeCheck(1000, repeat);
+            },function(){
+                console.log("Authentication failed");
+            }
+            );
         },username,password);
     }
 };
@@ -155,8 +163,8 @@ function getUserInput(){
                 } else {
                     console.log("Unknown option");
                 }
-                console.log("Connected: " + dnodeClient.connectStatus);
-                if(dnodeClient.connectStatus) {
+                console.log("Connected: " + dnodeClient.state.connectStatus);
+                if(dnodeClient.state.connectStatus) {
                     rl.setPrompt("[Connected]>");
                 }
                 rl.prompt();
