@@ -107,10 +107,16 @@ function del(fileName) {
 
 // To add valid operations, map user input to the desired function
 var userOps = {
-    quit: dnodeClient.end(),
+    quit: null,
     test: function () { console.log('Test'); },
     func: function (in1, in2) { console.log(in1 + ' and ' + in2); },
-    delete: del
+    delete: del,
+    login: function (username, password) {
+        dnodeClient.connect({host:argv.server, port:argv.port}, function(handler){
+            sync.fsHandlers.dnode = handler;
+            scheduleChangeCheck(1000,true);
+        },username,password);
+    }
 };
 
 function getUserInput(){
@@ -121,33 +127,41 @@ function getUserInput(){
         output: process.stdout
     });
 
+    rl.setPrompt("[Disconnected]>");
     rl.prompt();
     rl.on('line', function(line) {
         var args = line.trim().split(' ');
         var operation = args.shift();
 
-        if(operation == 'quit') {
-            rl.close();
-            clearTimeout(timer);
-            dnodeClient.end();
-            return;
-        } else if (operation == 'help') {
-            for (var op in userOps) {
-                if (userOps.hasOwnProperty(op)) {
-                    console.log(' * ' + op);
+        switch(operation) {
+            case("quit"):
+                rl.close();
+                clearTimeout(timer);
+                dnodeClient.disconnect();
+                return;
+
+            case("help"):
+                for (var op in userOps) {
+                    if (userOps.hasOwnProperty(op)) {
+                        console.log(' * ' + op);
+                    }
                 }
-            }
-        } else if (userOps.hasOwnProperty(operation)) {
-            userOps[operation].apply(this, args);
-        } else {
-            console.log("Unknown option");
+                rl.prompt();
+                break;
+
+            default:
+                if (userOps.hasOwnProperty(operation)) {
+                    userOps[operation].apply(this, args);
+                } else {
+                    console.log("Unknown option");
+                }
+                console.log("Connected: " + dnodeClient.connectStatus);
+                if(dnodeClient.connectStatus) {
+                    rl.setPrompt("[Connected]>");
+                }
+                rl.prompt();
         }
-        rl.prompt();
     });
 }
 
-dnodeClient.connect({host:argv.server, port:argv.port}, function(handler){
-    sync.fsHandlers.dnode = handler;
-    scheduleChangeCheck(1000,true);
-    getUserInput();
-},"wronguser","wrongpw");
+getUserInput();
