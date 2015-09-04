@@ -107,7 +107,7 @@ function del(fileName) {
 
 // To add valid operations, map user input to the desired function
 var userOps = {
-    quit: null,
+    quit: dnodeClient.end(),
     test: function () { console.log('Test'); },
     func: function (in1, in2) { console.log(in1 + ' and ' + in2); },
     delete: del
@@ -150,4 +150,4 @@ dnodeClient.connect({host:argv.server, port:argv.port}, function(handler){
     sync.fsHandlers.dnode = handler;
     scheduleChangeCheck(1000,true);
     getUserInput();
-});
+},"wronguser","wrongpw");
