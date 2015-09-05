@@ -45,6 +45,26 @@ var syncFile = function(fromPath,toPath){
 var writePipeline = new Pipeline();
 writePipeline.addAction({
     exec:function(data){
+        _.each(data.srcFilesToSave, function(toPrevVersions){
+            var fromPath = data.srcPath + "/" + toPrevVersions;
+            var toPath = data.srcPath + "/.prevVersions/" + toPrevVersions;
+            syncFile(fromPath,toPath);
+        });
+        return data;
+    }
+});
+writePipeline.addAction({
+    exec:function(data){
+        _.each(data.trgFilesToSave, function(toPrevVersions){
+            var fromPath = data.trgPath + "/" + toPrevVersions;
+            var toPath = data.trgPath + "/.prevVersions" + toPrevVersions;
+            syncFile(fromPath,toPath);
+        });
+        return data;
+    }
+});
+writePipeline.addAction({
+    exec:function(data){
         _.each(data.syncToSrc, function(toSrc){
             var fromPath = data.trgPath + "/" + toSrc;
             var toPath = data.srcPath + "/" + toSrc;
