@@ -8,14 +8,7 @@ var readline = require('readline');
 
 var argv = require('yargs')
     .usage('Usage: dropbox [options]')
-    .example('dropbox --directory1 dnode://test-data/folder1 --directory2 file://test-data/folder2', '(after launching the dropbox-server) listen for beacon signals with the given receiver id and reporting websocket url')
-    .demand(['d1','d2'])
-    .alias('d1', 'directory1')
-    .nargs('d1', 1)
-    .describe('d1', 'The first directory to sync (e.g., dnode://test-data/folder1)')
-    .alias('d2', 'directory2')
-    .nargs('d2', 1)
-    .describe('d2', 'The second directory to sync (e.g., file://test-data/folder2)')
+    .example('dropbox', '(after launching the dropbox-server) listen for beacon signals with the given receiver id and reporting websocket url')
     .describe('s', 'The sync server (defaults to 127.0.0.1)')
     .default('s',"127.0.0.1","127.0.0.1")
     .alias('s', 'server')
@@ -66,9 +59,9 @@ writePipeline.addAction({
     }
 });
 
-function checkForChanges(){
-    var path1 = argv.directory1;
-    var path2 = argv.directory2;
+function checkForChanges(username){
+    var path1 = "./server/"+username;
+    var path2 = "./client";
 
     sync.compare(path1,path2,sync.filesMatchNameAndSize, function(rslt) {
 
@@ -80,11 +73,11 @@ function checkForChanges(){
 }
 
 var timer;
-function scheduleChangeCheck(when,repeat){
+function scheduleChangeCheck(when,repeat,username){
     timer = setTimeout(function(){
-        checkForChanges();
+        checkForChanges(username);
 
-        if(repeat){scheduleChangeCheck(when,repeat)}
+        if(repeat){scheduleChangeCheck(when,repeat,username)}
     },when);
 }
 
@@ -162,7 +155,7 @@ function getPasswordFromDb(username) { return function(queryFinished) {
             if (rows.length != 0) {
                 password = rows[0].password;
             }
-            queryFinished(password);
+            queryFinished(username,password);
         });
         connection.end();
     }
@@ -187,13 +180,13 @@ function promptLogin() {
         if (err) throw err;
 
         getPasswordFromDb(result.username)(
-            function queryFinished(password) {
+            function queryFinished(username,password) {
                 if (result.password != password) {
                     console.log("Wrong login!\n");
                     promptLogin();
                 } else {
                     console.log("Login successful!\n");
-                    scheduleChangeCheck(1000,true);
+                    scheduleChangeCheck(1000,true,username);
                     getUserInput();
                 }
             });
