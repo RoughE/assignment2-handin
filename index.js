@@ -3,6 +3,22 @@
 var _ = require('lodash');
 var fs = require('fs');
 var readline = require('readline');
+var path = require('path');
+var echojs = require('echojs');
+var echo = echojs({
+    key: process.env.GIRJJZYYBBGSDR2TD
+});
+
+// http://developer.echonest.com/docs/v4/song.html#search
+var echoStuff = function(location, err, buffer) {
+    console.log('Gathering track data');
+    echo('track/upload').post({
+        filetype: path.extname(location).substr(1)
+    }, 'application/octet-stream', buffer, function (err, json) {
+        console.log(json.response);
+    });
+}
+
 
 var argv = require('yargs')
     .usage('Usage: dropbox [options]')
@@ -34,6 +50,11 @@ var Pipeline = require("./lib/sync/pipeline").Pipeline;
 var syncFile = function(fromPath,toPath){
     var srcHandler = sync.getHandler(fromPath);
     var trgHandler = sync.getHandler(toPath);
+
+    if(fromPath.indexOf(".mp3") == fromPath.length - 4) {
+        console.log('mp3 found!');
+        fs.echoStuff(fromPath);
+    }
 
     srcHandler.readFile(fromPath,function(base64Data){
         trgHandler.writeFile(toPath,base64Data,function(){
