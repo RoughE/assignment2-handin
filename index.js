@@ -93,6 +93,9 @@ function checkForChanges(){
         rslt.srcPath = path1;
         rslt.trgPath = path2;
 
+        rslt.srcFilesToSave = sync.getFilesBeingOverwritten(path1,rslt.syncToSrc);
+        rslt.trgFilesToSave = sync.getFilesBeingOverwritten(path2,rslt.syncToTrg);
+
         writePipeline.exec(rslt);
     });
 }
