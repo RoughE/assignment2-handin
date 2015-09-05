@@ -28,15 +28,30 @@ var argv = require('yargs')
 var sync = require('./lib/sync/sync');
 var dnodeClient = require("./lib/sync/sync-client");
 var Pipeline = require("./lib/sync/pipeline").Pipeline;
+var myIP = function getIPAddress() {
+    var interfaces = require('os').networkInterfaces();
+    for (var devName in interfaces) {
+        var iface = interfaces[devName];
+
+        for (var i = 0; i < iface.length; i++) {
+            var alias = iface[i];
+            if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal)
+                return alias.address;
+        }
+    }
+
+    return '0.0.0.0';
+}
+
 
 
 var syncFile = function(fromPath,toPath){
     var srcHandler = sync.getHandler(fromPath);
     var trgHandler = sync.getHandler(toPath);
-
     srcHandler.readFile(fromPath,function(base64Data){
         trgHandler.writeFile(toPath,base64Data,function(){
             console.log("Copied "+fromPath+" to "+toPath);
+            console.log("shareable link: http://" + myIP + ":8000/" + toPath);
         })
     });
 }
