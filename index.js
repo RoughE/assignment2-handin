@@ -22,6 +22,10 @@ var argv = require('yargs')
     .alias('p', 'port')
     .nargs('p', 1)
     .default('p',5004,"5004")
+    .describe('v', 'The maximum number of previous versions of files to store')
+    .alias('v', 'versions')
+    .nargs('v', 1)
+    .default('v', 5, "5")
     .epilog('Apache License V2 2015, Jules White')
     .argv;
 
