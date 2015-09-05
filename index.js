@@ -3,7 +3,6 @@
 var mysql = require('mysql');
 var prompt = require("prompt");
 var _ = require('lodash');
-var fs = require('fs');
 var readline = require('readline');
 
 var argv = require('yargs')
@@ -35,7 +34,7 @@ var syncFile = function(fromPath,toPath){
             console.log("Copied "+fromPath+" to "+toPath);
         })
     });
-}
+};
 
 var writePipeline = new Pipeline();
 writePipeline.addAction({
@@ -105,6 +104,7 @@ var userOps = {
     quit: null,
     test: function () { console.log('Test'); },
     func: function (in1, in2) { console.log(in1 + ' and ' + in2); },
+    logout: null,
     delete: del
 };
 
@@ -121,10 +121,14 @@ function getUserInput(){
         var args = line.trim().split(' ');
         var operation = args.shift();
 
-        if(operation == 'quit') {
+        if(operation == 'quit' || operation == 'logout') {
             rl.close();
             clearTimeout(timer);
             dnodeClient.end();
+            if (operation == 'logout') {
+                console.log("Logged out!\n");
+                promptLogin();
+            }
             return;
         } else if (operation == 'help') {
             for (var op in userOps) {
@@ -149,7 +153,7 @@ function getPasswordFromDb(username) { return function(queryFinished) {
             database: 'user'
         });
         connection.connect();
-        connection.query('SELECT * FROM user WHERE username=\"' + username + "\"", function (err, rows, fields) {
+        connection.query('SELECT * FROM user WHERE username="' + username + '"', function (err, rows) {
             if (err) throw err;
             var password;
             if (rows.length != 0) {
