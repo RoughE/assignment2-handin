@@ -24,7 +24,6 @@ var argv = require('yargs')
     .default('p',5004,"5004")
     .epilog('Apache License V2 2015, Jules White')
     .argv;
-//TODO add option to set a purely local file
 
 var sync = require('./lib/sync/sync');
 var dnodeClient = require("./lib/sync/sync-client");
@@ -66,7 +65,7 @@ writePipeline.addAction({
 });
 
 function checkForChanges(){
-    //TODO ignore changes to files that shouldnt be synced(specified as local)
+    //TODO ignore changes to files that shouldn't be synced(specified as local)
     var path1 = argv.directory1;
     var path2 = argv.directory2;
 
@@ -107,12 +106,24 @@ function del(fileName) {
     console.log('Deleting ' + fileName);
 }
 
+function ignore(fileName){
+    if(!fileName) {
+        console.log('Please enter a file to ignore synchronization ');
+        return;
+    }
+    //this needs to stop the syncing which I am not sure how to do from here without changing the way syncing works
+    //in sync.js
+    console.log("ignoring " + fileName + " not functional yet");
+
+}
+
 // To add valid operations, map user input to the desired function
 var userOps = {
     quit: null,
     test: function () { console.log('Test'); },
     func: function (in1, in2) { console.log(in1 + ' and ' + in2); },
-    delete: del
+    delete: del,
+    ignore: ignore
 };
 
 function getUserInput(){
