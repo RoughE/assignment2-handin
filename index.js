@@ -2,6 +2,7 @@
 
 var _ = require('lodash');
 var fs = require('fs');
+var readline = require('readline');
 
 var argv = require('yargs')
     .usage('Usage: dropbox [options]')
@@ -62,9 +63,9 @@ writePipeline.addAction({
     exec:function(data){
         _.each(data.syncToTrg, function(toTrg){
             var fromPath = data.srcPath + "/" + toTrg;
-            console.log("data: " + data + " totrg: " + toTrg + " fromPath " + fromPath);
+            //console.log("data: " + data + " totrg: " + toTrg + " fromPath " + fromPath);
             var toPath = data.trgPath + "/" + toTrg;
-            console.log("data: " + data + " totrg: " + toTrg + " trgPath " + toPath);
+            //console.log("data: " + data + " totrg: " + toTrg + " trgPath " + toPath);
             if(checkNoSyncFile(toTrg)){
                 syncFile(fromPath,toPath);
             }
@@ -103,15 +104,18 @@ function fileNeverSync(){
         input: process.stdin,
         output: process.stdout
     });
-
     r1.setPrompt('File name> ');
     r1.prompt();
-    r1.on('line', function(line){
-        console.log("The file you do not want to sync is " + line);
-        writeFile(line);
-        r1.close();
-    })
+    r1.on('line', function (line) {console.log("The file you do not want to sync is " + line);
+        if(checkNoSyncFile(line)){
+            writeFile(line);
+            r1.close();
+        }
+        else{
+            console.log(line + " is already in the no sync list.");
+        }
 
+    })
 }
 
 // Wrote a function to write to text files given the user input.
@@ -141,19 +145,17 @@ function checkNoSyncFile(filename){
     var array = fs.readFileSync('neversyncfile.txt').toString().split('\n');
 
     if(array.indexOf(filename) === -1){
-        console.log(filename + " was not found in log.");
+        //console.log(filename + " was not found in log.");
         return true;
     }
-    else{
-        console.log(filename + " was found in log and will not be synced.");
+    else {
+        //console.log(filename + " was found in log and will not be synced.");
         return false;
     }
 }
 
 dnodeClient.connect({host:argv.server, port:argv.port}, function(handler){
     sync.fsHandlers.dnode = handler;
-    //fileNeverSync();
+    fileNeverSync();
     scheduleChangeCheck(1000,true);
 });
-
-
