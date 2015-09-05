@@ -6,17 +6,17 @@
   "scripts": {
     "start": "NODE_PATH=lib node index.js"
   },
-  "bin":
-    {
-      "dropbox": "index.js",
-      "dropbox-server":"lib/sync/sync-server.js"
-    },
+  "bin": {
+    "dropbox": "index.js",
+    "dropbox-server": "lib/sync/sync-server.js"
+  },
   "author": "Jules",
   "license": "Apache 2",
   "dependencies": {
     "delivery": "0.0.3",
     "dnode": "^1.2.1",
     "lodash": "^3.10.1",
+    "my-local-ip": "^1.0.0",
     "yargs": "^3.19.0"
   }
 }
