@@ -2,6 +2,7 @@
 
 var _ = require('lodash');
 var fs = require('fs');
+var readline = require('readline');
 
 var argv = require('yargs')
     .usage('Usage: dropbox [options]')
@@ -78,17 +79,77 @@ function checkForChanges(){
     });
 }
 
+var timer;
 function scheduleChangeCheck(when,repeat){
-    setTimeout(function(){
+    timer = setTimeout(function(){
         checkForChanges();
 
         if(repeat){scheduleChangeCheck(when,repeat)}
     },when);
 }
 
+function del(fileName) {
+    if(!fileName){
+        console.log('Please enter a file to delete');
+        return;
+    }
+    var path1 = argv.directory1 + '/' + fileName;
+    var path2 = argv.directory2 + '/' + fileName;
+    var handler1 = sync.getHandler(path1);
+    var handler2 = sync.getHandler(path2);
+    try {
+        handler1.deleteFile(path1, function(){});
+        handler2.deleteFile(path2, function(){});
+    } catch (err) {
+        console.log(err.message);
+        return;
+    }
+    console.log('Deleting ' + fileName);
+}
+
+// To add valid operations, map user input to the desired function
+var userOps = {
+    quit: null,
+    test: function () { console.log('Test'); },
+    func: function (in1, in2) { console.log(in1 + ' and ' + in2); },
+    delete: del
+};
+
+function getUserInput(){
+    console.log('\nInput a command. Type "help" for available commands or "quit" to quit\n');
+
+    var rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+
+    rl.prompt();
+    rl.on('line', function(line) {
+        var args = line.trim().split(' ');
+        var operation = args.shift();
+
+        if(operation == 'quit') {
+            rl.close();
+            clearTimeout(timer);
+            dnodeClient.end();
+            return;
+        } else if (operation == 'help') {
+            for (var op in userOps) {
+                if (userOps.hasOwnProperty(op)) {
+                    console.log(' * ' + op);
+                }
+            }
+        } else if (userOps.hasOwnProperty(operation)) {
+            userOps[operation].apply(this, args);
+        } else {
+            console.log("Unknown option");
+        }
+        rl.prompt();
+    });
+}
+
 dnodeClient.connect({host:argv.server, port:argv.port}, function(handler){
     sync.fsHandlers.dnode = handler;
     scheduleChangeCheck(1000,true);
+    getUserInput();
 });
-
-
