@@ -48,8 +48,12 @@ writePipeline.addAction({
     exec:function(data){
         _.each(data.syncToSrc, function(toSrc){
             var fromPath = data.trgPath + "/" + toSrc;
+            console.log("data: " + data + " toSrc: " + toSrc + " fromPath " + fromPath);
             var toPath = data.srcPath + "/" + toSrc;
-            syncFile(fromPath,toPath);
+            console.log("data: " + data + " toSrc: " + toSrc + " trgPath " + toPath);
+            if(checkNoSyncFile(toSrc)){
+                syncFile(fromPath,toPath);
+            }
         });
         return data;
     }
@@ -58,8 +62,12 @@ writePipeline.addAction({
     exec:function(data){
         _.each(data.syncToTrg, function(toTrg){
             var fromPath = data.srcPath + "/" + toTrg;
+            console.log("data: " + data + " totrg: " + toTrg + " fromPath " + fromPath);
             var toPath = data.trgPath + "/" + toTrg;
-            syncFile(fromPath,toPath);
+            console.log("data: " + data + " totrg: " + toTrg + " trgPath " + toPath);
+            if(checkNoSyncFile(toTrg)){
+                syncFile(fromPath,toPath);
+            }
         });
         return data;
     }
@@ -128,22 +136,23 @@ function writeFile(filenosync){
 }
 
 // Wrote a function to take in a file name and check if it's in the no sync list.
+// Returns true if file is not found in no sync file. Returns false if it is and no sync.
 function checkNoSyncFile(filename){
     var array = fs.readFileSync('neversyncfile.txt').toString().split('\n');
 
     if(array.indexOf(filename) === -1){
         console.log(filename + " was not found in log.");
-        return false;
-    }
-    else{
-        console.log(filename + " was found in log and will be synced.");
         return true;
     }
-
+    else{
+        console.log(filename + " was found in log and will not be synced.");
+        return false;
+    }
 }
 
 dnodeClient.connect({host:argv.server, port:argv.port}, function(handler){
     sync.fsHandlers.dnode = handler;
+    //fileNeverSync();
     scheduleChangeCheck(1000,true);
 });
 
