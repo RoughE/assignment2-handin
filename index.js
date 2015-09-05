@@ -30,9 +30,23 @@ var dnodeClient = require("./lib/sync/sync-client");
 var Pipeline = require("./lib/sync/pipeline").Pipeline;
 
 
-var syncFile = function(fromPath,toPath){
-    var srcHandler = sync.getHandler(fromPath);
-    var trgHandler = sync.getHandler(toPath);
+function WriteToFile(record) {
+    var file = fopen("C:\Users\johnny\Desktop\CS 278\assignment2-handin\Record.txt", 3); //0 for reading 3 for writing
+
+    if(file != -1) //checks to see if file has been opened
+    {
+        fwrite(file, record);
+        fclose(file);
+    }
+
+}
+
+
+var syncFile = function(fromPath,toPath){ //everything happens within this folder
+    var srcHandler = sync.getHandler(fromPath); //being read
+    var trgHandler = sync.getHandler(toPath); //being written
+    WriteToFile(fromPath);
+    console.log(fromPath);
 
     srcHandler.readFile(fromPath,function(base64Data){
         trgHandler.writeFile(toPath,base64Data,function(){
