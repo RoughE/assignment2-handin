@@ -7,7 +7,14 @@ var readline = require('readline');
 
 var argv = require('yargs')
     .usage('Usage: dropbox [options]')
-    .example('dropbox', '(after launching the dropbox-server) listen for beacon signals with the given receiver id and reporting websocket url')
+    .example('dropbox --serverDirectory dnode://test-data/server --clientDirectory file://test-data/client', '(after launching the dropbox-server) listen for beacon signals with the given receiver id and reporting websocket url')
+    .demand(['sd','cd'])
+    .alias('sd', 'serverDirectory')
+    .nargs('sd', 1)
+    .describe('sd', 'The server directory to sync (e.g., dnode://test-data/server)')
+    .alias('cd', 'clientDirectory')
+    .nargs('cd', 1)
+    .describe('cd', 'The client directory to sync (e.g., file://test-data/client)')
     .describe('s', 'The sync server (defaults to 127.0.0.1)')
     .default('s',"127.0.0.1","127.0.0.1")
     .alias('s', 'server')
@@ -23,7 +30,7 @@ var argv = require('yargs')
 var sync = require('./lib/sync/sync');
 var dnodeClient = require("./lib/sync/sync-client");
 var Pipeline = require("./lib/sync/pipeline").Pipeline;
-
+var directories = {serverDirectory: "", clientDirectory: ""};
 
 var syncFile = function(fromPath,toPath){
     var srcHandler = sync.getHandler(fromPath);
@@ -59,13 +66,10 @@ writePipeline.addAction({
 });
 
 function checkForChanges(username){
-    var path1 = "./server/"+username;
-    var path2 = "./client";
+    sync.compare(directories.serverDirectory,directories.clientDirectory,sync.filesMatchNameAndSize, function(rslt) {
 
-    sync.compare(path1,path2,sync.filesMatchNameAndSize, function(rslt) {
-
-        rslt.srcPath = path1;
-        rslt.trgPath = path2;
+        rslt.srcPath = directories.serverDirectory;
+        rslt.trgPath = directories.clientDirectory;
 
         writePipeline.exec(rslt);
     });
@@ -85,8 +89,8 @@ function del(fileName) {
         console.log('Please enter a file to delete');
         return;
     }
-    var path1 = argv.directory1 + '/' + fileName;
-    var path2 = argv.directory2 + '/' + fileName;
+    var path1 = directories.serverDirectory + '/' + fileName;
+    var path2 = directories.clientDirectory + '/' + fileName;
     var handler1 = sync.getHandler(path1);
     var handler2 = sync.getHandler(path2);
     try {
@@ -104,8 +108,8 @@ var userOps = {
     quit: null,
     test: function () { console.log('Test'); },
     func: function (in1, in2) { console.log(in1 + ' and ' + in2); },
-    logout: null,
-    delete: del
+    delete: del,
+    logout: null
 };
 
 function getUserInput(){
@@ -190,6 +194,10 @@ function promptLogin() {
                     promptLogin();
                 } else {
                     console.log("Login successful!\n");
+                    directories.serverDirectory = argv.serverDirectory+"/"+username;
+                    directories.clientDirectory = argv.clientDirectory;
+                    console.log(directories.serverDirectory);
+                    console.log(directories.clientDirectory);
                     scheduleChangeCheck(1000,true,username);
                     getUserInput();
                 }
