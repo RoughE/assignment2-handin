@@ -84,9 +84,65 @@ function scheduleChangeCheck(when,repeat){
     },when);
 }
 
+
+//MY CONTRIBUTION (Client deleting locally)
+/* (see sync.js for some of the planning)
+ *  (Don't forget command line functionality)
+ */
+function removeFile(fname,directoryInfo){
+    //look for file w/ name
+  if(!fname){ throw "Please provide a valid filename to delete."; }
+  var fileList = directoryInfo.fileList;
+  //iterate through fileList (for loop stuff)
+//If at end of list, throw "BAD FILE REQUEST" or something
+
+}
+
+//FOLLOWING GOTTEN FROM MASTER BRANCH COMMAND LINE RE-DO
+// To add valid operations, map user input to the desired function
+var userOps = {
+    quit: null,
+    test: function () { console.log('Test'); },
+    func: function (in1, in2) { console.log(in1 + ' and ' + in2); },
+    delete: removeFile
+};
+
+function getUserInput(){
+    console.log('\nInput a command. Type "help" for available commands or "quit" to quit\n');
+
+    var rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+
+    rl.prompt();
+    rl.on('line', function(line) {
+        var args = line.trim().split(' ');
+        var operation = args.shift();
+
+        if(operation == 'quit') {
+            rl.close();
+            clearTimeout(timer);
+            dnodeClient.end();
+            return;
+        } else if (operation == 'help') {
+            for (var op in userOps) {
+                if (userOps.hasOwnProperty(op)) {
+                    console.log(' * ' + op);
+                }
+            }
+        } else if (userOps.hasOwnProperty(operation)) {
+            userOps[operation].apply(this, args);
+        } else {
+            console.log("Unknown option");
+        }
+        rl.prompt();
+    });
+}
+
+
+
 dnodeClient.connect({host:argv.server, port:argv.port}, function(handler){
     sync.fsHandlers.dnode = handler;
     scheduleChangeCheck(1000,true);
 });
-
-
