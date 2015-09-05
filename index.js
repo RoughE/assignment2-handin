@@ -148,7 +148,27 @@ function getUserInput(){
     });
 }
 
-function login() {
+function getPasswordFromDb(username) { return function(queryFinished) {
+        var connection = mysql.createConnection({
+            host: 'localhost',
+            user: 'root',
+            password: '',
+            database: 'user'
+        });
+        connection.connect();
+        connection.query('SELECT * FROM user WHERE username=\"' + username + "\"", function (err, rows, fields) {
+            if (err) throw err;
+            var password;
+            if (rows.length != 0) {
+                password = rows[0].password;
+            }
+            queryFinished(password);
+        });
+        connection.end();
+    }
+}
+
+function promptLogin() {
     var schema = {
         properties: {
             username: {
@@ -166,35 +186,21 @@ function login() {
     prompt.get(schema, function (err, result) {
         if (err) throw err;
 
-        var connection = mysql.createConnection({
-            host     : 'localhost',
-            user     : 'root',
-            password : '',
-            database : 'user'
-        });
-
-        connection.connect();
-
-        connection.query('SELECT * FROM user WHERE username=\"' + result.username+"\"", function(err, rows, fields) {
-            if (err) throw err;
-            if (rows.length == 0) {
-                console.log("Username not found");
-                login();
-            } else if (rows[0].password != result.password) {
-                console.log("Wrong password");
-                login();
-            } else {
-                console.log("Log in successful!");
-                scheduleChangeCheck(1000,true);
-                getUserInput();
-            }
-        });
-
-        connection.end();
+        getPasswordFromDb(result.username)(
+            function queryFinished(password) {
+                if (result.password != password) {
+                    console.log("Wrong login!\n");
+                    promptLogin();
+                } else {
+                    console.log("Login successful!\n");
+                    scheduleChangeCheck(1000,true);
+                    getUserInput();
+                }
+            });
     });
 }
 
 dnodeClient.connect({host:argv.server, port:argv.port}, function(handler){
     sync.fsHandlers.dnode = handler;
-    login();
+    promptLogin();
 });
