@@ -29,17 +29,24 @@ var sync = require('./lib/sync/sync');
 var dnodeClient = require("./lib/sync/sync-client");
 var Pipeline = require("./lib/sync/pipeline").Pipeline;
 
+var ignoreList = [];
+
 
 var syncFile = function(fromPath,toPath){
     //TODO don't sync the files that are specified as local
     var srcHandler = sync.getHandler(fromPath);
     var trgHandler = sync.getHandler(toPath);
 
-    srcHandler.readFile(fromPath,function(base64Data){
-        trgHandler.writeFile(toPath,base64Data,function(){
-            console.log("Copied "+fromPath+" to "+toPath);
-        })
-    });
+    if(ignoreList.indexOf(fromPath) === -1 && ignoreList.indexOf(toPath) === -1) {
+        console.log("from path "+ fromPath);
+        console.log("to path "+ toPath);
+        console.log(ignoreList.toString());
+        srcHandler.readFile(fromPath, function (base64Data) {
+            trgHandler.writeFile(toPath, base64Data, function () {
+                console.log("Copied " + fromPath + " to " + toPath);
+            })
+        });
+    }
 }
 
 var writePipeline = new Pipeline();
@@ -48,7 +55,9 @@ writePipeline.addAction({
         _.each(data.syncToSrc, function(toSrc){
             var fromPath = data.trgPath + "/" + toSrc;
             var toPath = data.srcPath + "/" + toSrc;
-            syncFile(fromPath,toPath);
+            //if(ignoreList.indexOf(fromPath) === -1 && ignoreList.indexOf(toPath) === -1) {
+                syncFile(fromPath, toPath);
+           // }
         });
         return data;
     }
@@ -58,7 +67,9 @@ writePipeline.addAction({
         _.each(data.syncToTrg, function(toTrg){
             var fromPath = data.srcPath + "/" + toTrg;
             var toPath = data.trgPath + "/" + toTrg;
-            syncFile(fromPath,toPath);
+            //if(ignoreList.indexOf(fromPath) === -1 && ignoreList.indexOf(toPath) === -1) {
+                syncFile(fromPath, toPath);
+           // }
         });
         return data;
     }
@@ -111,9 +122,23 @@ function ignore(fileName){
         console.log('Please enter a file to ignore synchronization ');
         return;
     }
+    ignoreList.push(argv.directory1 + '/' + fileName);
+    ignoreList.push(argv.directory2 + '/' + fileName);
+   /* console.log("reaches this");
     //this needs to stop the syncing which I am not sure how to do from here without changing the way syncing works
     //in sync.js
-    console.log("ignoring " + fileName + " not functional yet");
+    var path1 = argv.directory1 + '/' + fileName;
+    var path2 = argv.directory2 + '/' + fileName;
+    var handler1 = sync.getHandler(path1);
+    var handler2 = sync.getHandler(path2);
+    try {
+        handler1.ignoreFile(path1, function(){});
+        handler2.ignoreFile(path2, function(){});
+    } catch (err) {
+        console.log(err.message);
+        return;
+    }*/
+    console.log('Ignoring ' + fileName);
 
 }
 
