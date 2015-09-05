@@ -1,7 +1,5 @@
 #! /usr/bin/env node
 
-//TEST COMMIT
-
 var _ = require('lodash');
 var fs = require('fs');
 
