@@ -1,5 +1,7 @@
 #! /usr/bin/env node
 
+var mysql = require('mysql');
+var prompt = require("prompt");
 var _ = require('lodash');
 var fs = require('fs');
 var readline = require('readline');
@@ -146,8 +148,53 @@ function getUserInput(){
     });
 }
 
+function login() {
+    var schema = {
+        properties: {
+            username: {
+                required: true
+            },
+            password: {
+                hidden: true
+            }
+        }
+    };
+
+    prompt.colors = false;
+    prompt.start();
+
+    prompt.get(schema, function (err, result) {
+        if (err) throw err;
+
+        var connection = mysql.createConnection({
+            host     : 'localhost',
+            user     : 'root',
+            password : '',
+            database : 'user'
+        });
+
+        connection.connect();
+
+        connection.query('SELECT * FROM user WHERE username=\"' + result.username+"\"", function(err, rows, fields) {
+            if (err) throw err;
+            if (rows.length == 0) {
+                console.log("Username not found");
+                login();
+            } else if (rows[0].password != result.password) {
+                console.log("Wrong password");
+                login();
+            } else {
+                console.log("Log in successful!");
+                scheduleChangeCheck(1000,true);
+                getUserInput();
+            }
+        });
+
+        connection.end();
+    });
+}
+
 dnodeClient.connect({host:argv.server, port:argv.port}, function(handler){
     sync.fsHandlers.dnode = handler;
-    scheduleChangeCheck(1000,true);
-    getUserInput();
+    login();
 });
