@@ -13,6 +13,14 @@ var argv = require('yargs')
     .alias('d2', 'directory2')
     .nargs('d2', 1)
     .describe('d2', 'The second directory to sync (e.g., file://test-data/folder2)')
+    .alias('a1', 'active1')
+    .nargs('a1', 1)
+    .describe('a1', 'Selective syncing boolean flag for the first directory (i.e. 1: sync is on; 0: sync is off; defaults to 1)')
+    .default('a1', 1)
+    .alias('a2', 'active2')
+    .nargs('a2', 1)
+    .describe('a2', 'Selective syncing boolean flag for the second directory (i.e. 1: sync is on; 0: sync is off; defaults to 1)')
+    .default('a2', 1)
     .describe('s', 'The sync server (defaults to 127.0.0.1)')
     .default('s',"127.0.0.1","127.0.0.1")
     .alias('s', 'server')
@@ -78,10 +86,16 @@ function checkForChanges(){
 
 function scheduleChangeCheck(when,repeat){
     setTimeout(function(){
-        checkForChanges();
+        if (syncOptionIsOn) {
+            checkForChanges();
+        }
 
         if(repeat){scheduleChangeCheck(when,repeat)}
     },when);
+}
+
+function syncOptionIsOn() {
+
 }
 
 dnodeClient.connect({host:argv.server, port:argv.port}, function(handler){
