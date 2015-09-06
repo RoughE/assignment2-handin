@@ -110,22 +110,24 @@ function del(fileName) {
     console.log('Deleting ' + fileName);
 }
 
-function addNew(fileName) {
+function add(fileName) {
     if (!fileName) {
         console.log('Please enter a file to add');
         return;
     }
-    var path1 = argv.firectory1 + '/' + fileName;
+    var path1 = argv.directory1 + '/' + fileName;
     var path2 = argv.directory2 + '/' + fileName;
     var handler1 = sync.getHandler(path1);
     var handler2 = sync.getHandler(path2);
     try {
         handler1.writeFile(path1, 'new File', function(){
-            console.log('Adding new file to ' + path1 + '\n');
+            console.log('Adding new file ' + path1 + '\n');
         });
         handler2.writeFile(path1, 'new File', function(){
-            console.log('Adding new file to ' + path2 + '\n');
+            console.log('Adding new file ' + path2 + '\n');
         });
+        lastUpdate = Date.now();
+        console.log('Files updated at ' + lastUpdate);
     } catch (err) {
         console.log('Failed to add new file ' + fileName);
         console.log(err.message);
@@ -147,7 +149,7 @@ var userOps = {
     quit: null,
     test: function () { console.log('Test'); },
     func: function (in1, in2) { console.log(in1 + ' and ' + in2); },
-    addfile : addNew,
+    add : add,
     delete: del,
     update: lastUpdated
 };
