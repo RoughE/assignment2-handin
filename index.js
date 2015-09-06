@@ -3,6 +3,7 @@
 var _ = require('lodash');
 var fs = require('fs');
 var readline = require('readline');
+var uris = require("./lib/sync/dropboxuris");
 
 var argv = require('yargs')
     .usage('Usage: dropbox [options]')
@@ -77,8 +78,9 @@ function checkForChanges(){
     });
 }
 
+var timer;
 function scheduleChangeCheck(when,repeat){
-    setTimeout(function(){
+   timer = setTimeout(function(){
         checkForChanges();
 
         if(repeat){scheduleChangeCheck(when,repeat)}
@@ -90,56 +92,58 @@ function getList(path){
     console.log(handler.list(path));
 }
 
-
-function listSearch(name, path, handler){
-    console.log("searching lists");
-    handler.list(path, function(list){
-        console.log("in callback")
-        for (var i = 0; i < list.length; i++){
-            console.log("at index " + i);
-            console.log(list[i]);
-            if(list[i] === name) {
-                console.log("foundit");
-                return true;
-            }
-        }
-        console.log("File name "+name+" is not in path "+path);
-        return false;
-    });
-}
-
-
 //MY CONTRIBUTION
 function deleteFile(fName){
-    //look for file w/ name
     if(!fName) {
-          throw "Please provide a valid filename to delete.";
+        console.log("Please provide a valid filename to delete.");
+        return;
     }
+    console.log(fName);
+    fName.substr(0,length-1);
     console.log(fName);
     //need to actually get path
     var path1 = argv.directory1;
-    console.log(path1);
     var path2 = argv.directory2;
-    console.log(path2);
     var handler1 = sync.getHandler(path1);
     var handler2 = sync.getHandler(path2);
 
-    var inList1 = listSearch(fName, path1, handler1);
-    var inList2 = listSearch(fName, path2, handler2);
+    var inList1 = listSearch(fName, uris.getPath(path1));
+    var inList2 = listSearch(fName, uris.getPath(path2));
 
     if(!inList1 || !inList2){
-        throw "Requested file is not in the serverList";
+        console.log("Requested file is not in the serverList");
+        return;
     }
 
-    path = path + "/" + fName;
+    path1 = path1+"/"+fName;
+    path2 = path2+"/"+fName;
     try {
-        handler1.removeFile(path, function () {});
-        handler2.removeFile(path, function () {});
+        handler1.removeFile(path1, function(){});
+        handler2.removeFile(path2, function(){});
     }
-    catch(err){console.log(err.message()); return;}
+    catch(err){
+        console.log("Error removing the file");
+        return;
+    }
 
     console.log("Deleting file");
 }
+
+function listSearch(name, path){
+    console.log("searching lists");
+    var list = fs.readdirSync(path);
+    console.log(list);
+    for (var i = 0; i < list.length; i++){
+        if(list[i] === name) {
+            console.log("found it");
+            return true;
+        }
+    }
+
+    console.log("did not find "+name);
+    return false;
+}
+//END MY CONTRIBUTION
 
 //FOLLOWING GOTTEN FROM MASTER BRANCH COMMAND LINE
 // To add valid operations, map user input to the desired function
@@ -152,7 +156,7 @@ var userOps = {
 
 function getUserInput(){
     console.log('\nInput a command. Type "help" for available commands or "quit" to quit\n');
-
+    console.log('Delete has special instructions.\n');
     var rl = readline.createInterface({
         input: process.stdin,
         output: process.stdout
