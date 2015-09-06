@@ -1,1 +1,3 @@
 ignore.txt
+ignore2.txt
+ignore3.txt
