@@ -93,14 +93,17 @@ function getList(path){
 }
 
 //MY CONTRIBUTION
+/*
+* deleteFile
+*
+* takes a string for the name, searches for that file in the dropbox
+*    and, if found, deletes it from both dnode and file directories
+* */
 function deleteFile(fName){
     if(!fName) {
         console.log("Please provide a valid filename to delete.");
         return;
     }
-    console.log(fName);
-    fName.substr(0,length-1);
-    console.log(fName);
     //need to actually get path
     var path1 = argv.directory1;
     var path2 = argv.directory2;
@@ -129,6 +132,15 @@ function deleteFile(fName){
     console.log("Deleting file");
 }
 
+/*
+*
+* listSearch
+*
+* helper function for delete. takes a file name and a path a directory.
+*    Searches through the directory and returns true if it finds a file
+*    with the given name.
+*
+* */
 function listSearch(name, path){
     console.log("searching lists");
     var list = fs.readdirSync(path);
@@ -142,7 +154,7 @@ function listSearch(name, path){
 }
 //END MY CONTRIBUTION
 
-//FOLLOWING GOTTEN FROM MASTER BRANCH COMMAND LINE
+//FOLLOWING GOTTEN FROM MASTER BRANCH COMMAND LINE INTERFACE
 // To add valid operations, map user input to the desired function
 var userOps = {
     quit: null,
@@ -153,7 +165,6 @@ var userOps = {
 
 function getUserInput(){
     console.log('\nInput a command. Type "help" for available commands or "quit" to quit\n');
-//    console.log('Delete has special instructions.\n');
     var rl = readline.createInterface({
         input: process.stdin,
         output: process.stdout
