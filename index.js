@@ -82,7 +82,7 @@ function checkForChanges(){
 
 function scheduleChangeCheck(when,repeat){
     setTimeout(function(){
-        if (syncOptionIsOn) {
+        if (syncOptionIsOn()) {
             checkForChanges();
         }
 
@@ -91,7 +91,7 @@ function scheduleChangeCheck(when,repeat){
 }
 
 function syncOptionIsOn() {
-
+    return argv.a;
 }
 
 dnodeClient.connect({host:argv.server, port:argv.port}, function(handler){
