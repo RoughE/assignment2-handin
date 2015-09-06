@@ -1,10 +1,7 @@
 #! /usr/bin/env node
 
-var fs = require('fs');
-var prompt = require("prompt");
 var _ = require('lodash');
 var readline = require('readline');
-var crypto = require('crypto');
 
 var argv = require('yargs')
     .usage('Usage: dropbox [options]')
@@ -27,12 +24,11 @@ var argv = require('yargs')
     .epilog('Apache License V2 2015, Jules White')
     .argv;
 
-var uris = require('./lib/sync/dropboxuris')
-var db = require('./lib/sync/db');
+var login = require('./lib/sync/login');
 var sync = require('./lib/sync/sync');
 var dnodeClient = require("./lib/sync/sync-client");
 var Pipeline = require("./lib/sync/pipeline").Pipeline;
-var directories = {serverDirectory: "", clientDirectory: ""};
+var directories = {serverDirectory: '', clientDirectory: ''};
 
 var syncFile = function(fromPath,toPath){
     var srcHandler = sync.getHandler(fromPath);
@@ -68,7 +64,6 @@ writePipeline.addAction({
 });
 
 function checkForChanges(){
-
     sync.compare(directories.serverDirectory,directories.clientDirectory,sync.filesMatchNameAndSize, function(rslt) {
 
         rslt.srcPath = directories.serverDirectory;
@@ -111,6 +106,10 @@ var userOps = {
     quit: null,
     test: function () { console.log('Test'); },
     func: function (in1, in2) { console.log(in1 + ' and ' + in2); },
+    list:
+        function () {
+            sync.listFiles(directories.clientDirectory, function(result) { console.log(result.fileList); })
+        },
     delete: del,
     logout: null
 };
@@ -133,7 +132,7 @@ function getUserInput(){
             clearTimeout(timer);
             if (operation == 'logout') {
                 console.log("Logged out!\n");
-                promptLoginOrCreate();
+                login.login(argv.serverDirectory, afterLogin);
             } else {
                 dnodeClient.end();
             }
@@ -153,82 +152,7 @@ function getUserInput(){
     });
 }
 
-function promptLoginOrCreate() {
-    prompt.colors = false;
-    prompt.start();
-
-    prompt.get({
-        properties: {
-            answer: {
-                description: "Would you like to create a new login? (Y/n)"
-            }
-        }
-    }, function (err, result) {
-        if (err) {
-            if (err.message == 'canceled') process.exit();
-            else throw err;
-        }
-
-        if (result.answer == 'Y' || result.answer == 'y') {
-            showLogin(function createLogin(result) {
-                db.usernameExists(result.username, function queryFinished(usernameExists) {
-                    if (!usernameExists) {
-                        db.addLogin(result, function queryFinished(username) {
-                            // create user server directory
-                            fs.mkdirSync(uris.getPath(argv.serverDirectory)+"/"+username);
-                            afterLogin(username);
-                        });
-                    } else {
-                        console.log('Username already exists!\n');
-                        promptLoginOrCreate();
-                    }
-                });
-            });
-        } else if (result.answer == 'N' || result.answer == 'n') {
-            showLogin(function login(result) {
-                db.getPassword(result.username, function queryFinished(login) {
-                    var hashedPassword = crypto.createHash('md5').update(result.password).digest('hex');
-                    if (hashedPassword != login.password) {
-                        console.log('Wrong login!\n');
-                        promptLoginOrCreate();
-                    } else {
-                        console.log('Login successful!\n');
-                        afterLogin(login.username);
-                    }
-                });
-            });
-        } else {
-            promptLoginOrCreate();
-        }
-    });
-}
-
-function showLogin(callback) {
-    var schema = {
-        properties: {
-            username: {
-                required: true
-            },
-            password: {
-                hidden: true
-            }
-        }
-    };
-
-    prompt.colors = false;
-    prompt.start();
-
-    prompt.get(schema, function (err, result) {
-        if (err) {
-            if (err.message == 'canceled') process.exit();
-            else throw err;
-        }
-
-        callback(result);
-    });
-}
-
-function afterLogin(username) {
+var afterLogin = function (username) {
     directories.serverDirectory = argv.serverDirectory+"/"+username;
     directories.clientDirectory = argv.clientDirectory;
     scheduleChangeCheck(1000,true);
@@ -237,5 +161,5 @@ function afterLogin(username) {
 
 dnodeClient.connect({host:argv.server, port:argv.port}, function(handler){
     sync.fsHandlers.dnode = handler;
-    promptLoginOrCreate();
+    login.login(argv.serverDirectory, afterLogin);
 });

@@ -83,7 +83,7 @@ dropbox-server
 __client:__
 ```bash
 cd <the directory with index.js>
-dropbox --sd ./server --cd ./client
+dropbox --sd dnode://test-data/server --cd file://test-data/client
 ```
 
 If you checked out a fresh repo, you should immediately see something like:
@@ -93,7 +93,7 @@ Connected to Dropbox remote
 Copied file://test-data/client/test.txt to dnode://test-data/server/test.txt
 Copied file://test-data/client/test2.txt to dnode://test-data/server/test2.txt
 ```
-Whatever files you put into folder1 or folder2 will now be copied to the other folder.
+Whatever files you put into client or the user's folder in server will now be copied to the other folder.
 Changes will also be copied across directories.
 
 ## Code Overview
