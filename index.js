@@ -135,12 +135,9 @@ function listSearch(name, path){
     console.log(list);
     for (var i = 0; i < list.length; i++){
         if(list[i] === name) {
-            console.log("found it");
             return true;
         }
     }
-
-    console.log("did not find "+name);
     return false;
 }
 //END MY CONTRIBUTION
@@ -156,7 +153,7 @@ var userOps = {
 
 function getUserInput(){
     console.log('\nInput a command. Type "help" for available commands or "quit" to quit\n');
-    console.log('Delete has special instructions.\n');
+//    console.log('Delete has special instructions.\n');
     var rl = readline.createInterface({
         input: process.stdin,
         output: process.stdout
