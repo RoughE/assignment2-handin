@@ -105,9 +105,38 @@ function del(fileName) {
     console.log('Deleting ' + fileName);
 }
 
+
+function rename(currentFileName, newFileName) {
+    if(!currentFileName){
+        console.log('Please enter a file to rename');
+        return;
+    }
+    var path1 = argv.directory1 + '/' + currentFileName;
+    var path2 = argv.directory2 + '/' + currentFileName;
+
+    var path1new = argv.directory1 + '/' + newFileName;
+    var path2new = argv.directory2 + '/' + newFileName;
+
+    var handler1 = sync.getHandler(path1);
+    var handler2 = sync.getHandler(path2);
+
+    var handler1new = sync.getHandler(path1new);
+    var handler2new = sync.getHandler(path2new);
+
+    try {
+        handler1.renameFile(path1,path1new , function(){});
+        handler2.renameFile(path2, path2new, function(){});
+    } catch (err) {
+        console.log(err.message);
+        return;
+    }
+    console.log('Renaming  ' + currentFileName + " to " + newFileName);
+}
+
 // To add valid operations, map user input to the desired function
 var userOps = {
     quit: null,
+    rename: function (in1, in2) { rename(in1,in2); },
     test: function () { console.log('Test'); },
     func: function (in1, in2) { console.log(in1 + ' and ' + in2); },
     delete: del

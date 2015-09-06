@@ -59,12 +59,12 @@ test({name:"Sync Module"}, function(tester) {
             },
             expectedValue: function (rslt) {
                 var hasTest = _.contains(rslt.syncToSrc, "test.txt");
-                var hasTest2 = _.contains(rslt.syncToSrc, "test2.txt");
+                var hasTest2 = _.contains(rslt.syncToSrc, "test3.txt");
                 var nothingNeedsSyncingToFolder2 = (rslt.syncToTrg.length == 0);
 
                 return hasTest && hasTest2 && nothingNeedsSyncingToFolder2;
             },
-            msg: "folder1 should need test2.txt and test.txt sync'd to it, but folder2 shouldn't need anything sync'd"
+            msg: "folder1 should need test3.txt and test.txt sync'd to it, but folder2 shouldn't need anything sync'd"
         }
     )
 });
@@ -93,7 +93,7 @@ test({name:"Pipeline Module"}, function(tester) {
 
                 return hasResult && hasHistory && resultIs1 && historyHas2Items && historyHasCorrectItems;
             },
-            msg: "folder1 should need test2.txt and test.txt sync'd to it, but folder2 shouldn't need anything sync'd"
+            msg: "folder1 should need test3.txt and test.txt sync'd to it, but folder2 shouldn't need anything sync'd"
         }
     );
 });
