@@ -46,7 +46,7 @@ var syncFile = function(fromPath,toPath){
     });
 };
 
-var overwritePreviousVersions = function(dirPath,versions,newFile){
+var overwritePreviousVersions = function(dirPath,prevDirPath,versions,newFile){
     var handler = sync.getHandler(dirPath);
     var overwrite = function(fromPath,toPath){
         handler.readFile(fromPath,function(base64Data){
@@ -57,22 +57,24 @@ var overwritePreviousVersions = function(dirPath,versions,newFile){
     }
 
     for (var i = 1; i < versions.length; i++) {
-        var fromPath = dirPath + "/" + versions[i];
-        var toPath = dirPath + "/" + versions[i-1];
+        var fromPath = prevDirPath + "/" + versions[i];
+        var toPath = prevDirPath + "/" + versions[i-1];
         overwrite(fromPath,toPath);
     }
     fromPath = dirPath + "/" + newFile;
-    toPath = dirPath + "/" + _.last(versions);
-    overwrite(fromPath, toPath)
+    toPath = prevDirPath + "/" + versions[version.length-1];
+    overwrite(fromPath, toPath);
 };
 
 var savePreviousVersion = function(dirPath,file) {
     var prevDirPath = dirPath + "/.prev_versions";
     var versions = sync.getPreviousVersions(prevDirPath,file);
     if (versions.length < argv.v) {
-        // TODO add logic
+        var fromPath = dirPath + "/" + file;
+        var toPath = prevDirPath + "/(ver" + (versions.length+1) + ")" + file;
+        syncFile(fromPath,toPath);
     } else {
-        overwritePreviousVersions()
+        overwritePreviousVersions(dirPath,prevDirPath,versions,file);
     }
 };
 
