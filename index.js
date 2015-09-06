@@ -30,7 +30,7 @@ var sync = require('./lib/sync/sync');
 var uris = require('./lib/sync/dropboxuris');
 var dnodeClient = require("./lib/sync/sync-client");
 var Pipeline = require("./lib/sync/pipeline").Pipeline;
-var emailer = require('./lib/email/emailer');
+var updateEmailer = require('./lib/email/updateemailer');
 
 
 var syncFile = function(fromPath,toPath){
@@ -88,50 +88,6 @@ function scheduleChangeCheck(when,repeat){
     },when);
 }
 
-var checkPastDayUpdates = function(path, callback){
-    var changedFileList = [];
-    var millisInDay = 86400000;
-    var now = (new Date()).getTime();
-    var yesterday = now - millisInDay;
-
-    fs.readdir(path, function (error, fileList){
-        if (error){
-            return callback(error);
-        }
-        for (var file in fileList){
-            var filename = path + '/' + fileList[file];
-            var stats = fs.statSync(filename);
-
-            var modifiedTime = stats.mtime.getTime();
-            if (modifiedTime > yesterday){
-                changedFileList.push(filename);
-            }
-        }
-        return callback(null, changedFileList);
-    });
-};
-
-var emailUpdates = function(path, emailAddress){
-    checkPastDayUpdates(path, function (error, changedFileList){
-        if (error){
-            console.error(error);
-            return;
-        }
-
-        emailer.email(emailAddress, changedFileList, function (err){
-            if (err){
-                if (err === 'No valid email found.'){
-                    console.log('No valid email found.');
-                }
-
-                console.error(err);
-            } else {
-                console.log('Email successfully sent to ' + emailAddress + '.');
-            }
-        });
-    });
-};
-
 function del(fileName) {
     if(!fileName){
         console.log('Please enter a file to delete');
@@ -151,10 +107,35 @@ function del(fileName) {
     console.log('Deleting ' + fileName);
 }
 
+var emailUpdates = function (emailAddress, hours){
+
+    if (!emailAddress && !hours){
+        var errorMessage = 'Enter an email address and a number of hours. \n' +
+                'For example: emailUpdates bob@bob.com 15 \n' +
+                'Bob will get an email giving him his updates for the past 15 hours. \n' +
+                'If you do not enter a number of hours, it will default to 24 hours.';
+        console.log(errorMessage);
+        return;
+    }
+
+    if (hours < 0){
+        console.log("Please enter a positive number of hours");
+        return;
+    }
+
+    var path = uris.getPath(argv.directory1);
+
+    if (!hours){
+        hours = 24;
+    }
+
+    updateEmailer.emailUpdates(path, emailAddress, hours);
+};
+
 // To add valid operations, map user input to the desired function
 var userOps = {
     quit: null,
-    emailupdates: function (emailAddress) {emailUpdates(uris.getPath(argv.directory1), emailAddress); },
+    emailUpdates: emailUpdates,
     test: function () { console.log('Test'); },
     func: function (in1, in2) { console.log(in1 + ' and ' + in2); },
     delete: del
