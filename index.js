@@ -4,6 +4,7 @@ var fs = require('fs');
 var prompt = require("prompt");
 var _ = require('lodash');
 var readline = require('readline');
+var crypto = require('crypto');
 
 var argv = require('yargs')
     .usage('Usage: dropbox [options]')
@@ -171,10 +172,7 @@ function promptLoginOrCreate() {
                         db.addLoginToDb(result, function queryFinished(username) {
                             // create user server directory
                             fs.mkdirSync(argv.serverDirectory+"/"+username);
-                            directories.serverDirectory = argv.serverDirectory+"/"+username;
-                            directories.clientDirectory = argv.clientDirectory;
-                            scheduleChangeCheck(1000,true);
-                            getUserInput();
+                            afterLogin(username);
                         });
                     } else {
                         console.log('Username already exists!\n');
@@ -185,15 +183,13 @@ function promptLoginOrCreate() {
         } else if (result.answer == 'N' || result.answer == 'n') {
             showLogin(function login(result) {
                 db.getPasswordFromDb(result.username, function queryFinished(login) {
-                    if (result.password != login.password) {
+                    var hashedPassword = crypto.createHash('md5').update(result.password).digest('hex');
+                    if (hashedPassword != login.password) {
                         console.log('Wrong login!\n');
                         promptLoginOrCreate();
                     } else {
                         console.log('Login successful!\n');
-                        directories.serverDirectory = argv.serverDirectory+"/"+login.username;
-                        directories.clientDirectory = argv.clientDirectory;
-                        scheduleChangeCheck(1000,true);
-                        getUserInput();
+                        afterLogin(login.username);
                     }
                 });
             });
@@ -223,6 +219,13 @@ function showLogin(callback) {
 
         callback(result);
     });
+}
+
+function afterLogin(username) {
+    directories.serverDirectory = argv.serverDirectory+"/"+username;
+    directories.clientDirectory = argv.clientDirectory;
+    scheduleChangeCheck(1000,true);
+    getUserInput();
 }
 
 dnodeClient.connect({host:argv.server, port:argv.port}, function(handler){
