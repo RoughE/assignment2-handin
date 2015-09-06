@@ -51,7 +51,7 @@ writePipeline.addAction({
     exec:function(data){
         _.each(data.srcFilesToSave, function(toPrevVersions){
             var fromPath = data.srcPath + "/" + toPrevVersions;
-            var toPath = data.srcPath + "/.prevVersions/" + toPrevVersions;
+            var toPath = data.srcPath + "/.prev_versions/" + toPrevVersions;
             syncFile(fromPath,toPath);
         });
         return data;
@@ -61,7 +61,7 @@ writePipeline.addAction({
     exec:function(data){
         _.each(data.trgFilesToSave, function(toPrevVersions){
             var fromPath = data.trgPath + "/" + toPrevVersions;
-            var toPath = data.trgPath + "/.prevVersions" + toPrevVersions;
+            var toPath = data.trgPath + "/.prev_versions/" + toPrevVersions;
             syncFile(fromPath,toPath);
         });
         return data;
@@ -97,8 +97,10 @@ function checkForChanges(){
         rslt.srcPath = path1;
         rslt.trgPath = path2;
 
-        rslt.srcFilesToSave = sync.getFilesBeingOverwritten(path1,rslt.syncToSrc);
-        rslt.trgFilesToSave = sync.getFilesBeingOverwritten(path2,rslt.syncToTrg);
+        if (argv.v >= 1) {
+            rslt.srcFilesToSave = sync.getFilesToBeOverwritten(path1, rslt.syncToSrc);
+            rslt.trgFilesToSave = sync.getFilesToBeOverwritten(path2, rslt.syncToTrg);
+        }
 
         writePipeline.exec(rslt);
     });
