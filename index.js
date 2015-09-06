@@ -27,6 +27,7 @@ var argv = require('yargs')
 
 
 var sync = require('./lib/sync/sync');
+var uris = require('./lib/sync/dropboxuris');
 var dnodeClient = require("./lib/sync/sync-client");
 var Pipeline = require("./lib/sync/pipeline").Pipeline;
 var emailer = require('./lib/email/emailer');
@@ -97,7 +98,6 @@ var checkPastDayUpdates = function(path, callback){
         if (error){
             return callback(error);
         }
-
         for (var file in fileList){
             var filename = path + '/' + fileList[file];
             var stats = fs.statSync(filename);
@@ -107,7 +107,6 @@ var checkPastDayUpdates = function(path, callback){
                 changedFileList.push(filename);
             }
         }
-
         return callback(null, changedFileList);
     });
 };
@@ -119,7 +118,17 @@ var emailUpdates = function(path, emailAddress){
             return;
         }
 
-        emailer.email(emailAddress, changedFileList);
+        emailer.email(emailAddress, changedFileList, function (err){
+            if (err){
+                if (err === 'No valid email found.'){
+                    console.log('No valid email found.');
+                }
+
+                console.error(err);
+            } else {
+                console.log('Email successfully sent to ' + emailAddress + '.');
+            }
+        });
     });
 };
 
@@ -145,7 +154,7 @@ function del(fileName) {
 // To add valid operations, map user input to the desired function
 var userOps = {
     quit: null,
-    emailupdates: function (emailAddress) {emailUpdates(argv.directory1, emailAddress); },
+    emailupdates: function (emailAddress) {emailUpdates(uris.getPath(argv.directory1), emailAddress); },
     test: function () { console.log('Test'); },
     func: function (in1, in2) { console.log(in1 + ' and ' + in2); },
     delete: del
