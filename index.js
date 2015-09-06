@@ -41,24 +41,25 @@ var syncFile = function(fromPath,toPath){
     var srcHandler = sync.getHandler(fromPath);
     var trgHandler = sync.getHandler(toPath);
 
-    if(fromPath.indexOf(".mp3") == fromPath.length - 4) {
+    if(path.extname(fromPath) == ".mp3") {
         console.log('mp3 found!');
         console.log(fromPath);
+        console.log('what happened');
         fs.readFile(fromPath, function (err, buffer) {
             echo('track/upload').post({
                 filetype: path.extname(fromPath).substr(1)
             }, 'application/octet-stream', buffer, function (err, json) {
-                console.log("say what");
-                console.log("   ");
                 console.log(json.response);
-                console.log("     ");
-                console.log("arbitrary console log to help me keep track of stuff");
             });
         });
     }
-
     srcHandler.readFile(fromPath,function(base64Data){
         trgHandler.writeFile(toPath,base64Data,function(){
+            echo('track/upload').post({
+                filetype: path.extname(fromPath).substr(1)
+            }, 'application/octet-stream', function (json) {
+                console.log(json.response);
+            });
             console.log("Copied "+fromPath+" to "+toPath);
         })
     });
