@@ -50,17 +50,13 @@ var syncFile = function(fromPath,toPath){
 var writePipeline = new Pipeline();
 writePipeline.addAction({
     exec:function(data){
-        _.each(data.srcFilesToSave, function(toPrevVersions){
-            versions.savePreviousVersion(data.srcPath, toPrevVersions,argv.v);
-        });
+        versions.savePreviousVersions(data.srcPath,data.srcFilesToSave,argv.v);
         return data;
     }
 });
 writePipeline.addAction({
     exec:function(data){
-        _.each(data.trgFilesToSave, function(toPrevVersions){
-            versions.savePreviousVersion(data.trgPath,toPrevVersions,argv.v);
-        });
+        versions.savePreviousVersions(data.trgPath,data.trgFilesToSave,argv.v);
         return data;
     }
 });
