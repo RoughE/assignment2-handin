@@ -2,6 +2,8 @@
 
 var _ = require('lodash');
 var fs = require('fs');
+var readline = require('readline');
+
 
 var argv = require('yargs')
     .usage('Usage: dropbox [options]')
@@ -28,6 +30,34 @@ var argv = require('yargs')
 var sync = require('./lib/sync/sync');
 var dnodeClient = require("./lib/sync/sync-client");
 var Pipeline = require("./lib/sync/pipeline").Pipeline;
+
+
+/*
+ var rl = readline.createInterface({
+ input: process.stdin,
+ output: process.stdout
+ });
+
+ var directory1 = "";
+ var directory2 = "";
+
+ console.log('\nWhat is the path of the first directory you would like to sync?');
+
+ rl.prompt();
+
+ rl.on('line', function(line){
+ directory1 = line;
+
+ console.log('\nWhat is the path of the second directory you would like to sync?');
+
+ rl.prompt();
+
+ directory2 = line;
+
+ rl.close();
+ });
+ */
+
 
 
 var syncFile = function(fromPath,toPath){
