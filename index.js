@@ -33,7 +33,7 @@ var Pipeline = require("./lib/sync/pipeline").Pipeline;
 function WriteToFile(record) {
     //var file = fopen("C:\Users\johnny\Desktop\CS 278\assignment2-handin\Record.txt", 3); //0 for reading 3 for writing
     var file = require('fs');
-    file.mkdirSync('C:\Users\johnny\Desktop\CS 278\assignment2-handin\Records', function(err){
+    file.mkdir('Records', function(err){
         if(err) {
             console.log('ALREADY EXISTS');
             throw err
@@ -45,7 +45,7 @@ function WriteToFile(record) {
 });
 
 
-    file.appendFile('Record.txt', record, function (err) { //file name, data type, callback
+    file.appendFile('Records/Record.txt', record, function (err) { //file name, data type, callback
         if (err){
             throw err
         }
