@@ -111,7 +111,7 @@ var emailUpdates = function (emailAddress, hours){
 
     if (!emailAddress && !hours){
         var errorMessage = 'Enter an email address and a number of hours. \n' +
-                'For example: emailUpdates bob@bob.com 15 \n' +
+                'For example: "emailupdates bob@bob.com 15" \n' +
                 'Bob will get an email giving him his updates for the past 15 hours. \n' +
                 'If you do not enter a number of hours, it will default to 24 hours.';
         console.log(errorMessage);
@@ -135,7 +135,7 @@ var emailUpdates = function (emailAddress, hours){
 // To add valid operations, map user input to the desired function
 var userOps = {
     quit: null,
-    emailUpdates: emailUpdates,
+    emailupdates: emailUpdates,
     test: function () { console.log('Test'); },
     func: function (in1, in2) { console.log(in1 + ' and ' + in2); },
     delete: del
