@@ -36,7 +36,8 @@ var syncFile = function(fromPath,toPath){
 
     srcHandler.readFile(fromPath,function(base64Data){
         trgHandler.writeFile(toPath,base64Data,function(){
-            UpdLog(fromPath, Date.now().toString()); //Update Log call when syncing file
+            var updTime = new Date();
+            UpdLog(fromPath, updTime); //Update Log call when syncing file
             console.log("Copied "+fromPath+" to "+toPath);
         })
     });
@@ -67,13 +68,8 @@ writePipeline.addAction({
 //Feature Addition for Update Log
 function UpdLog(change, timestamp)
 {
-    //Get current timestamp
-    var utc = timestamp;
-    var d = new Date(0);
-    d.setUTCSeconds(utc);
-
     //Create string for log
-    var str = 'Updated ' + change + ' - ' + d+'\n';
+    var str = 'Updated ' + change + ' - ' + timestamp +'\n';
 
     //Update consolelog.txt with change
     fs.appendFile('changelog.txt', str , function (err) {
@@ -106,5 +102,3 @@ dnodeClient.connect({host:argv.server, port:argv.port}, function(handler){
     sync.fsHandlers.dnode = handler;
     scheduleChangeCheck(1000,true);
 });
-
-
