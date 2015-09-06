@@ -2,6 +2,7 @@
 
 var _ = require('lodash');
 var fs = require('fs');
+var readline = require('readline');
 
 var argv = require('yargs')
     .usage('Usage: dropbox [options]')
@@ -84,32 +85,60 @@ function scheduleChangeCheck(when,repeat){
     },when);
 }
 
+function getList(path){
+    var handler = sync.getHandler(path);
+    console.log(handler.list(path));
+}
 
-//MY CONTRIBUTION (Client deleting locally)
-/* (see sync.js for some of the planning)
- *  (Don't forget command line functionality)
- */
-function deleteFile(fname,directoryInfo){
+
+function listSearch(name, path, handler){
+    console.log("searching lists");
+    handler.list(path, function(list){
+        console.log("in callback")
+        for (var i = 0; i < list.length; i++){
+            console.log("at index " + i);
+            console.log(list[i]);
+            if(list[i] === name) {
+                console.log("foundit");
+                return true;
+            }
+        }
+        console.log("File name "+name+" is not in path "+path);
+        return false;
+    });
+}
+
+
+//MY CONTRIBUTION
+function deleteFile(fName){
     //look for file w/ name
-    if(!fname) {
+    if(!fName) {
           throw "Please provide a valid filename to delete.";
     }
+    console.log(fName);
     //need to actually get path
-    var handler = sync.getHandler(path);
-    var fileList = handler.list(path);
-    var flag = false;
-    for (var i = 0; i < fileList.length; i++){
-       if(fileList[i] === fname)
-         flag = true;
+    var path1 = argv.directory1;
+    console.log(path1);
+    var path2 = argv.directory2;
+    console.log(path2);
+    var handler1 = sync.getHandler(path1);
+    var handler2 = sync.getHandler(path2);
+
+    var inList1 = listSearch(fName, path1, handler1);
+    var inList2 = listSearch(fName, path2, handler2);
+
+    if(!inList1 || !inList2){
+        throw "Requested file is not in the serverList";
     }
-    if(!flag){ throw "Requested file does not exist"; return;}
-    //need to do some stuff here first?
+
+    path = path + "/" + fName;
     try {
-        handler.removeFile(path, function () {});
+        handler1.removeFile(path, function () {});
+        handler2.removeFile(path, function () {});
     }
     catch(err){console.log(err.message()); return;}
-    //If at end of list, throw "BAD FILE REQUEST" or something
 
+    console.log("Deleting file");
 }
 
 //FOLLOWING GOTTEN FROM MASTER BRANCH COMMAND LINE
