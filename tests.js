@@ -6,8 +6,8 @@ var test = require('./lib/test/expect').test;
 var sync = require('./lib/sync/sync');
 var Pipeline = require('./lib/sync/pipeline').Pipeline;
 
-var directory1 = "./test-data/folder1";
-var directory2 = "./test-data/folder2";
+var directory1 = "./test-data/server/un";
+var directory2 = "./test-data/client";
 
 test({name:"Dropbox URIs"}, function(tester){
     tester.expectThat(

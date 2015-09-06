@@ -8,7 +8,7 @@ var crypto = require('crypto');
 
 var argv = require('yargs')
     .usage('Usage: dropbox [options]')
-    .example('dropbox --serverDirectory test-data/server --clientDirectory test-data/client', '(after launching the dropbox-server) listen for beacon signals with the given receiver id and reporting websocket url')
+    .example('dropbox --serverDirectory dnode://test-data/server --clientDirectory file://test-data/client', '(after launching the dropbox-server) listen for beacon signals with the given receiver id and reporting websocket url')
     .demand(['sd','cd'])
     .alias('sd', 'serverDirectory')
     .nargs('sd', 1)
@@ -27,6 +27,7 @@ var argv = require('yargs')
     .epilog('Apache License V2 2015, Jules White')
     .argv;
 
+var uris = require('./lib/sync/dropboxuris')
 var db = require('./lib/sync/db');
 var sync = require('./lib/sync/sync');
 var dnodeClient = require("./lib/sync/sync-client");
@@ -163,15 +164,18 @@ function promptLoginOrCreate() {
             }
         }
     }, function (err, result) {
-        if (err) throw err;
+        if (err) {
+            if (err.message == 'canceled') process.exit();
+            else throw err;
+        }
 
         if (result.answer == 'Y' || result.answer == 'y') {
             showLogin(function createLogin(result) {
-                db.usernameExistsInDb(result.username, function queryFinished(usernameExists) {
+                db.usernameExists(result.username, function queryFinished(usernameExists) {
                     if (!usernameExists) {
-                        db.addLoginToDb(result, function queryFinished(username) {
+                        db.addLogin(result, function queryFinished(username) {
                             // create user server directory
-                            fs.mkdirSync(argv.serverDirectory+"/"+username);
+                            fs.mkdirSync(uris.getPath(argv.serverDirectory)+"/"+username);
                             afterLogin(username);
                         });
                     } else {
@@ -182,7 +186,7 @@ function promptLoginOrCreate() {
             });
         } else if (result.answer == 'N' || result.answer == 'n') {
             showLogin(function login(result) {
-                db.getPasswordFromDb(result.username, function queryFinished(login) {
+                db.getPassword(result.username, function queryFinished(login) {
                     var hashedPassword = crypto.createHash('md5').update(result.password).digest('hex');
                     if (hashedPassword != login.password) {
                         console.log('Wrong login!\n');
@@ -215,7 +219,10 @@ function showLogin(callback) {
     prompt.start();
 
     prompt.get(schema, function (err, result) {
-        if (err) throw err;
+        if (err) {
+            if (err.message == 'canceled') process.exit();
+            else throw err;
+        }
 
         callback(result);
     });
