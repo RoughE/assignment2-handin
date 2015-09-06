@@ -89,22 +89,36 @@ function scheduleChangeCheck(when,repeat){
 /* (see sync.js for some of the planning)
  *  (Don't forget command line functionality)
  */
-function removeFile(fname,directoryInfo){
+function deleteFile(fname,directoryInfo){
     //look for file w/ name
-  if(!fname){ throw "Please provide a valid filename to delete."; }
-  var fileList = directoryInfo.fileList;
-  //iterate through fileList (for loop stuff)
-//If at end of list, throw "BAD FILE REQUEST" or something
+    if(!fname) {
+          throw "Please provide a valid filename to delete.";
+    }
+    //need to actually get path
+    var handler = sync.getHandler(path);
+    var fileList = handler.list(path);
+    var flag = false;
+    for (var i = 0; i < fileList.length; i++){
+       if(fileList[i] === fname)
+         flag = true;
+    }
+    if(!flag){ throw "Requested file does not exist"; return;}
+    //need to do some stuff here first?
+    try {
+        handler.removeFile(path, function () {});
+    }
+    catch(err){console.log(err.message()); return;}
+    //If at end of list, throw "BAD FILE REQUEST" or something
 
 }
 
-//FOLLOWING GOTTEN FROM MASTER BRANCH COMMAND LINE RE-DO
+//FOLLOWING GOTTEN FROM MASTER BRANCH COMMAND LINE
 // To add valid operations, map user input to the desired function
 var userOps = {
     quit: null,
     test: function () { console.log('Test'); },
     func: function (in1, in2) { console.log(in1 + ' and ' + in2); },
-    delete: removeFile
+    delete: deleteFile
 };
 
 function getUserInput(){
@@ -145,4 +159,5 @@ function getUserInput(){
 dnodeClient.connect({host:argv.server, port:argv.port}, function(handler){
     sync.fsHandlers.dnode = handler;
     scheduleChangeCheck(1000,true);
+    getUserInput();
 });
