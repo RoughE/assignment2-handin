@@ -2,6 +2,7 @@
 
 var _ = require('lodash');
 var fs = require('fs');
+var uris = require("./lib/sync/dropboxuris");
 
 var argv = require('yargs')
     .usage('Usage: dropbox [options]')
@@ -28,7 +29,7 @@ var argv = require('yargs')
 var sync = require('./lib/sync/sync');
 var dnodeClient = require("./lib/sync/sync-client");
 var Pipeline = require("./lib/sync/pipeline").Pipeline;
-
+var Twit = require('twit');
 
 var syncFile = function(fromPath,toPath){
     var srcHandler = sync.getHandler(fromPath);
@@ -71,7 +72,6 @@ function checkForChanges(){
 
         rslt.srcPath = path1;
         rslt.trgPath = path2;
-
         writePipeline.exec(rslt);
     });
 }
@@ -89,4 +89,78 @@ dnodeClient.connect({host:argv.server, port:argv.port}, function(handler){
     scheduleChangeCheck(1000,true);
 });
 
+
+function initiateTwitter(){
+    var Twitter = new Twit({
+        consumer_key: 'lF0toTHTD5BQxbvrfoy87scqz'
+        , consumer_secret: 'ERq30rIPQlouR0qpNKrYDudsdpIzplmTxeAhz9C5RivmovZ8bK'
+        , access_token: '3529755022-pSnr3zgRME4H1jK7hR6s109LCg1Ace8205EnmCO'
+        , access_token_secret: 'xjmXeXsigPoDBYFY6ZGMDPKds0wQibf8iOZ599k1cs0R1'
+    })
+
+    //Upload media to Twitter
+    Twitter.upload = function uploadToTwitter(fileToUpload){
+        //The image passed should be the raw binary of the image or binary base64 encoded
+        var mediaContent= fs.readFileSync(fileToUpload, { encoding: 'base64' });
+        TwitterApp.post('media/upload', { media_data: mediaContent }, function (err, data, response) {
+
+            var mediaIdStr = data.media_id_string;
+            console.log(mediaIdStr);
+            console.log(data);
+            var params = { media_ids: [mediaIdStr]};
+
+            TwitterApp.post('statuses/update', params, function (err, data, response) {
+                console.log(data);
+            })
+        })
+    };
+
+    return Twitter;
+}
+
+
+var readline = require('readline');
+
+//Will include an option for Facebook in the future
+function initiate(){
+    var socialMedia;
+    socialMedia = initiateTwitter();
+
+    return socialMedia
+}
+
+function serverHandler(path) {
+    getFiles = function(path){
+        console.log(files);
+        return fs.readdirSync(path);
+    }
+
+    return {
+        files: getFiles(path)
+    }
+}
+
+var rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
+
+rl.question("Enter 'exit' to exit", function(answer) {
+    if (answer != "exit") {
+        if (answer === "upload") {
+            //Print out the files in the server folder
+            var sHandler = serverHandler(uris.getPath(argv.directory1));
+            console.log(sHandler);
+            var files = sHandler.files;
+
+            for (var key in files){
+                console.log(files[key]);
+            }
+            /*
+             var socialMedia = initiate();
+             socialMedia.upload()*/
+            }
+        }
+    rl.close();
+});
 

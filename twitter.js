@@ -15,7 +15,7 @@ var TwitterApp = new Twit({
 //Upload media to Twitter
 
 //The image passed should be the raw binary of the image or binary base64 encoded
-var mediaContent= fs.readFileSync('clock.png', { encoding: 'base64' })
+var mediaContent= fs.readFileSync('./test-data/folder1/clock.png', { encoding: 'base64' })
 
 TwitterApp.post('media/upload', { media_data: mediaContent }, function (err, data, response) {
 
