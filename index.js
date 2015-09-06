@@ -44,15 +44,43 @@ var syncFile = function(fromPath,toPath){
             console.log("Copied "+fromPath+" to "+toPath);
         })
     });
-}
+};
+
+var overwritePreviousVersions = function(dirPath,versions,newFile){
+    var handler = sync.getHandler(dirPath);
+    var overwrite = function(fromPath,toPath){
+        handler.readFile(fromPath,function(base64Data){
+            handler.writeFile(toPath,base64Data,function(){
+                console.log("Previous file version "+toPath+" overwritten by "+fromPath);
+            })
+        });
+    }
+
+    for (var i = 1; i < versions.length; i++) {
+        var fromPath = dirPath + "/" + versions[i];
+        var toPath = dirPath + "/" + versions[i-1];
+        overwrite(fromPath,toPath);
+    }
+    fromPath = dirPath + "/" + newFile;
+    toPath = dirPath + "/" + _.last(versions);
+    overwrite(fromPath, toPath)
+};
+
+var savePreviousVersion = function(dirPath,file) {
+    var prevDirPath = dirPath + "/.prev_versions";
+    var versions = sync.getPreviousVersions(prevDirPath,file);
+    if (versions.length < argv.v) {
+        // TODO add logic
+    } else {
+        overwritePreviousVersions()
+    }
+};
 
 var writePipeline = new Pipeline();
 writePipeline.addAction({
     exec:function(data){
         _.each(data.srcFilesToSave, function(toPrevVersions){
-            var fromPath = data.srcPath + "/" + toPrevVersions;
-            var toPath = data.srcPath + "/.prev_versions/" + toPrevVersions;
-            syncFile(fromPath,toPath);
+            savePreviousVersion(data.srcPath, toPrevVersions);
         });
         return data;
     }
@@ -60,9 +88,7 @@ writePipeline.addAction({
 writePipeline.addAction({
     exec:function(data){
         _.each(data.trgFilesToSave, function(toPrevVersions){
-            var fromPath = data.trgPath + "/" + toPrevVersions;
-            var toPath = data.trgPath + "/.prev_versions/" + toPrevVersions;
-            syncFile(fromPath,toPath);
+            savePreviousVersion(data.trgPath,toPrevVersions);
         });
         return data;
     }
