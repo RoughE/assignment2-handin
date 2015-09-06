@@ -29,6 +29,7 @@ var argv = require('yargs')
 var sync = require('./lib/sync/sync');
 var dnodeClient = require("./lib/sync/sync-client");
 var Pipeline = require("./lib/sync/pipeline").Pipeline;
+var emailer = require('./lib/email/emailer');
 
 
 var syncFile = function(fromPath,toPath){
@@ -40,7 +41,7 @@ var syncFile = function(fromPath,toPath){
             console.log("Copied "+fromPath+" to "+toPath);
         })
     });
-}
+};
 
 var writePipeline = new Pipeline();
 writePipeline.addAction({
@@ -86,6 +87,42 @@ function scheduleChangeCheck(when,repeat){
     },when);
 }
 
+var checkPastDayUpdates = function(path, callback){
+    var changedFileList = [];
+    var millisInDay = 86400000;
+    var now = (new Date()).getTime();
+    var yesterday = now - millisInDay;
+
+    fs.readdir(path, function (error, fileList){
+        if (error){
+            return callback(error);
+        }
+
+        for (var file in fileList){
+            var filename = path + '/' + fileList[file];
+            var stats = fs.statSync(filename);
+
+            var modifiedTime = stats.mtime.getTime();
+            if (modifiedTime > yesterday){
+                changedFileList.push(filename);
+            }
+        }
+
+        return callback(null, changedFileList);
+    });
+};
+
+var emailUpdates = function(path, emailAddress){
+    checkPastDayUpdates(path, function (error, changedFileList){
+        if (error){
+            console.error(error);
+            return;
+        }
+
+        emailer.email(emailAddress, changedFileList);
+    });
+};
+
 function del(fileName) {
     if(!fileName){
         console.log('Please enter a file to delete');
@@ -108,6 +145,7 @@ function del(fileName) {
 // To add valid operations, map user input to the desired function
 var userOps = {
     quit: null,
+    emailupdates: function (emailAddress) {emailUpdates(argv.directory1, emailAddress); },
     test: function () { console.log('Test'); },
     func: function (in1, in2) { console.log(in1 + ' and ' + in2); },
     delete: del
