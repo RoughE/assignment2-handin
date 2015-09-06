@@ -9,16 +9,6 @@ var echo = echojs({
     key: process.env.GIRJJZYYBBGSDR2TD
 });
 
-// http://developer.echonest.com/docs/v4/song.html#search
-var echoStuff = function(location, err, buffer) {
-    console.log('Gathering track data');
-    echo('track/upload').post({
-        filetype: path.extname(location).substr(1)
-    }, 'application/octet-stream', buffer, function (err, json) {
-        console.log(json.response);
-    });
-}
-
 
 var argv = require('yargs')
     .usage('Usage: dropbox [options]')
@@ -53,7 +43,18 @@ var syncFile = function(fromPath,toPath){
 
     if(fromPath.indexOf(".mp3") == fromPath.length - 4) {
         console.log('mp3 found!');
-        fs.echoStuff(fromPath);
+        console.log(fromPath);
+        fs.readFile(fromPath, function (err, buffer) {
+            echo('track/upload').post({
+                filetype: path.extname(fromPath).substr(1)
+            }, 'application/octet-stream', buffer, function (err, json) {
+                console.log("say what");
+                console.log("   ");
+                console.log(json.response);
+                console.log("     ");
+                console.log("arbitrary console log to help me keep track of stuff");
+            });
+        });
     }
 
     srcHandler.readFile(fromPath,function(base64Data){
