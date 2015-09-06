@@ -1,0 +1,18 @@
+For this assignment, I added a feature that allows the user to send a link to something in their dropbox.
+This is achieved by creating an http server and utilizing streams.
+How to use it
+1. open a separate terminal window and cd into the assignment2 directory
+2. enter node lib/sync/sync-server.js into the command line to start the server (the dropbox server must not be running)
+3. enter node index.js instead of dropbox before the client-side command of the original assignment instructions
+4. once you have received notification that the server is running you can then share links
+5. to view the link yourself you can use localhost:8000/***file path***
+   to send a link to another person you will have to obtain your ip address first, then construct the link
+   http://ip address:8000/***file path***
+   for example:
+   localhost:8000/lib/sync/sync-server.js should allow you to see the sync-server.js file in your browser
+   http://10.67.16.47:8000/lib/sync/sync-server.js would allow someone else to see the syn-server.js file
+
+Caveats
+1. This feature will only work on the Vanderbilt network because of security settings.
+2  My goal was to print the sharable link to the console for the user, but I had issues with the ip.address() function.
+   This is something I would like to fix, so in your review if you find my error please let me know.
