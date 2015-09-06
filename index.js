@@ -29,7 +29,7 @@ var sync = require('./lib/sync/sync');
 var dnodeClient = require("./lib/sync/sync-client");
 var Pipeline = require("./lib/sync/pipeline").Pipeline;
 var os = require('os');
-
+var ip = require("ip");
 
 
 var syncFile = function(fromPath,toPath){
@@ -38,12 +38,13 @@ var syncFile = function(fromPath,toPath){
     srcHandler.readFile(fromPath,function(base64Data){
         trgHandler.writeFile(toPath,base64Data,function(){
             console.log("Copied "+fromPath+" to "+toPath);
-            var ip = require("ip");
+            console.log('Now time for a link');
             var myIP = ip.address();
-            console.log('Sharable link: http://' + myIP + ':8000/' + toPath);
-        })
+            var myPath = toPath.substring(8);
+            console.log('Shareable link: http://' + myIP + ':8000/' + myPath);
+        });
     });
-}
+};
 
 var writePipeline = new Pipeline();
 writePipeline.addAction({
