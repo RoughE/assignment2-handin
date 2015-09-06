@@ -33,14 +33,12 @@ var ignoreList = [];
 
 
 var syncFile = function(fromPath,toPath){
-    //TODO don't sync the files that are specified as local
     var srcHandler = sync.getHandler(fromPath);
     var trgHandler = sync.getHandler(toPath);
 
+    //I don't like doing this string comparison to have it ignore files
+    //I feel like there should be a way to set a file to be ignored but I can't find one
     if(ignoreList.indexOf(fromPath) === -1 && ignoreList.indexOf(toPath) === -1) {
-        console.log("from path "+ fromPath);
-        console.log("to path "+ toPath);
-        console.log(ignoreList.toString());
         srcHandler.readFile(fromPath, function (base64Data) {
             trgHandler.writeFile(toPath, base64Data, function () {
                 console.log("Copied " + fromPath + " to " + toPath);
@@ -55,9 +53,7 @@ writePipeline.addAction({
         _.each(data.syncToSrc, function(toSrc){
             var fromPath = data.trgPath + "/" + toSrc;
             var toPath = data.srcPath + "/" + toSrc;
-            //if(ignoreList.indexOf(fromPath) === -1 && ignoreList.indexOf(toPath) === -1) {
-                syncFile(fromPath, toPath);
-           // }
+            syncFile(fromPath, toPath);
         });
         return data;
     }
@@ -67,16 +63,13 @@ writePipeline.addAction({
         _.each(data.syncToTrg, function(toTrg){
             var fromPath = data.srcPath + "/" + toTrg;
             var toPath = data.trgPath + "/" + toTrg;
-            //if(ignoreList.indexOf(fromPath) === -1 && ignoreList.indexOf(toPath) === -1) {
-                syncFile(fromPath, toPath);
-           // }
+            syncFile(fromPath, toPath);
         });
         return data;
     }
 });
 
 function checkForChanges(){
-    //TODO ignore changes to files that shouldn't be synced(specified as local)
     var path1 = argv.directory1;
     var path2 = argv.directory2;
 
@@ -124,22 +117,7 @@ function ignore(fileName){
     }
     ignoreList.push(argv.directory1 + '/' + fileName);
     ignoreList.push(argv.directory2 + '/' + fileName);
-   /* console.log("reaches this");
-    //this needs to stop the syncing which I am not sure how to do from here without changing the way syncing works
-    //in sync.js
-    var path1 = argv.directory1 + '/' + fileName;
-    var path2 = argv.directory2 + '/' + fileName;
-    var handler1 = sync.getHandler(path1);
-    var handler2 = sync.getHandler(path2);
-    try {
-        handler1.ignoreFile(path1, function(){});
-        handler2.ignoreFile(path2, function(){});
-    } catch (err) {
-        console.log(err.message);
-        return;
-    }*/
     console.log('Ignoring ' + fileName);
-
 }
 
 // To add valid operations, map user input to the desired function
