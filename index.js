@@ -28,6 +28,7 @@ var argv = require('yargs')
 var sync = require('./lib/sync/sync');
 var dnodeClient = require("./lib/sync/sync-client");
 var Pipeline = require("./lib/sync/pipeline").Pipeline;
+//var theServer = require("./lib/sync/sync-server");
 
 
 var syncFile = function(fromPath,toPath){
@@ -84,11 +85,27 @@ function scheduleChangeCheck(when,repeat){
     },when);
 }
 
+//authnetication object
+var authenticate = {
+    question :null,
+    answer: null,
+    authenticated:false
+};
 
+var prompt = require('prompt');
+prompt.start();
 
 dnodeClient.connect({host:argv.server, port:argv.port}, function(handler){
     sync.fsHandlers.dnode = handler;
-    argv.server.authCheck(null,null);
+    //while not authenticated
+    while (!authenticate.authenticated){ // while not authenticated
+        authCheck(authenticate); //check
+        console.log(authenticate.question);
+        prompt.get(['answer'], function(err,result) { //get user input
+            authenticate.answer = result.answer;
+        });
+    }
+
     //write the client side here
     scheduleChangeCheck(1000,true);
 });
