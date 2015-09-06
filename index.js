@@ -70,11 +70,17 @@ writePipeline.addAction({
     }
 });
 
+var ignoredFiles = {}
+function ignore() {
+    ignoredFiles = argv.i;
+
+}
+
 function checkForChanges(){
     var path1 = argv.directory1;
     var path2 = argv.directory2;
 
-    sync.compare(path1,path2,sync.filesMatchNameAndSize, function(rslt) {
+    sync.compare(path1,path2,sync.filesMatchNameAndSize, function(rslt, ignoredFiles) {
 
         rslt.srcPath = path1;
         rslt.trgPath = path2;
