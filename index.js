@@ -2,6 +2,8 @@
 
 var _ = require('lodash');
 var fs = require('fs');
+var readline = require('readline')
+var moment = require('moment');
 
 var argv = require('yargs')
     .usage('Usage: dropbox [options]')
@@ -28,16 +30,44 @@ var argv = require('yargs')
 var sync = require('./lib/sync/sync');
 var dnodeClient = require("./lib/sync/sync-client");
 var Pipeline = require("./lib/sync/pipeline").Pipeline;
-
+var rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
 
 var syncFile = function(fromPath,toPath){
     var srcHandler = sync.getHandler(fromPath);
     var trgHandler = sync.getHandler(toPath);
 
     srcHandler.readFile(fromPath,function(base64Data){
+
         trgHandler.writeFile(toPath,base64Data,function(){
             console.log("Copied "+fromPath+" to "+toPath);
+            rl.question("Enter your username: ", function(answer) {
+                rl.close();
+                var shortPath = fromPath.split('/');
+                fs.appendFile('Log.txt', answer + " edited file " + shortPath[shortPath.length - 1] + " "
+                    + moment().format('MMM Do YYYY, h:mm:ss a') + '\n', function(err) {
+                    if (err)
+                        throw err;
+                });
+            });
+
+            /*fs.stat('Log.txt', function(err, stat) {
+               if (err == null) {
+                   //file exists
+                   console.log(username);
+                   fs.appendFile('Log.txt', username + " " + moment().format('MMMM Do YYYY, h:mm:ss a') + '\n', function(err) {
+                      if(err)
+                      throw error;
+                   });
+               } else if (err.code == 'ENOENT') {
+                   //file does not exist; first log
+                   fs.writeFile('log.txt', username + " " + moment().format('MMMM Do YYYY, h:mm:ss a') + '\n');
+               }
+            });*/
         })
+
     });
 }
 
