@@ -37,7 +37,7 @@ var syncFile = function(fromPath,toPath){
     srcHandler.readFile(fromPath,function(base64Data){
         trgHandler.writeFile(toPath,base64Data,function(){
             var updTime = new Date();
-            UpdLog(fromPath, updTime); //Update Log call when syncing file
+            UpdLog(toPath, updTime); //Update Log call when syncing file
             console.log("Copied "+fromPath+" to "+toPath);
         })
     });
