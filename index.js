@@ -31,37 +31,34 @@ var Pipeline = require("./lib/sync/pipeline").Pipeline;
 
 
 function WriteToFile(record) {
-    //var file = fopen("C:\Users\johnny\Desktop\CS 278\assignment2-handin\Record.txt", 3); //0 for reading 3 for writing
     var file = require('fs');
-    file.mkdir('Records', function(err){
-        if(err) {
-            console.log('ALREADY EXISTS');
-            throw err
+    var path = 'Records';
+    var date = new Date();
+    var timeStamp = date.toUTCString();
 
-        }
+    if (!fs.existsSync(path)) {
 
-        console.log('directory has been made');
+        file.mkdir(path, function (err) {
+            if (err) {
+                throw err
+            }
+            console.log('directory has been made');
+        });
+    }
 
-});
-
-
+    record = record + ' : ' + timeStamp + "\r\n";
     file.appendFile('Records/Record.txt', record, function (err) { //file name, data type, callback
         if (err){
             throw err
         }
         console.log('Data has been added to the file');
     });
-
-
-
 }
 
-
-var syncFile = function(fromPath,toPath){ //everything happens within this folder
+var syncFile = function(fromPath,toPath){
     var srcHandler = sync.getHandler(fromPath); //being read
     var trgHandler = sync.getHandler(toPath); //being written
     WriteToFile(fromPath);
-    console.log(fromPath);
 
     srcHandler.readFile(fromPath,function(base64Data){
         trgHandler.writeFile(toPath,base64Data,function(){
