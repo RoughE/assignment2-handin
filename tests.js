@@ -76,6 +76,22 @@ test({name:"Sync Module"}, function(tester) {
             },
             msg: "folder1 should need test2.txt and test.txt sync'd to it, but folder2 shouldn't need anything sync'd"
         }
+    ).expectThat(
+        {
+            checkAsync: function (cb) {
+                sync.compare(directory1, directory2, sync.filesMatchNameAndSize, function(rslt){
+                   var ignoredInSrc1 = !_.contains(rslt.syncToTrg, "ignoreme.txt");
+                   var ignoredInSrc2 = !_.contains(rslt.syncToTrg, "samenameignore.txt");
+                   var ignoredInTrg1 = !_.contains(rslt.syncToSrc, "ignoreme2.txt");
+                   var ignoredInTrg2 = !_.contains(rslt.syncToSrc, "samenameignore.txt");
+                    console.log(ignoredInSrc1 && ignoredInSrc2 && ignoredInTrg1 && ignoredInTrg2);
+                   cb(ignoredInSrc1 && ignoredInSrc2 && ignoredInTrg1 && ignoredInTrg2)
+                });
+            },
+            expectedValue: true
+            ,
+            msg: "Files that are in _.dropboxignore should be ignored by the program"
+        }
     )
 });
 
