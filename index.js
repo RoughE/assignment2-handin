@@ -38,9 +38,9 @@ var syncFile = function(fromPath,toPath){
 
     srcHandler.readFile(fromPath,function(base64Data){
         trgHandler.writeFile(toPath,base64Data,function(){
-            lastUpdate = Date.now();
+            lastUpdate = new Date();
             console.log("Copied "+fromPath+" to "+toPath);
-            console.log("Files updated at " + lastUpdate);
+            console.log("Files updated on " + formatTime(lastUpdate));
         })
     });
 }
@@ -101,8 +101,8 @@ function del(fileName) {
     try {
         handler1.deleteFile(path1, function(){});
         handler2.deleteFile(path2, function(){});
-        lastUpdate = Date.now();
-        console.log('Files updated at ' + lastUpdate);
+        lastUpdate = new Date();
+        console.log('Files deleted on ' + formatTime(lastUpdate));
     } catch (err) {
         console.log(err.message);
         return;
@@ -120,14 +120,10 @@ function add(fileName) {
     var handler1 = sync.getHandler(path1);
     var handler2 = sync.getHandler(path2);
     try {
-        handler1.writeFile(path1, 'new File', function(){
-            console.log('Adding new file ' + path1 + '\n');
-        });
-        handler2.writeFile(path1, 'new File', function(){
-            console.log('Adding new file ' + path2 + '\n');
-        });
-        lastUpdate = Date.now();
-        console.log('Files updated at ' + lastUpdate);
+        handler1.writeFile(path1, 'new File', function(){});
+        handler2.writeFile(path1, 'new File', function(){});
+        lastUpdate = new Date();
+        console.log('Files added on ' + formatTime(lastUpdate));
     } catch (err) {
         console.log('Failed to add new file ' + fileName);
         console.log(err.message);
@@ -138,10 +134,29 @@ function add(fileName) {
 
 function lastUpdated() {
     if (lastUpdate) {
-        console.log('Files last updated at ' + lastUpdate);
+        console.log('Files last updated on ' + formatTime(lastUpdate));
     } else {
         console.log('No files have been changed');
     }
+}
+
+function formatTime(time) {
+    var dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+    var dayOfWeek = time.getDay();
+    var dayName = dayNames[dayOfWeek];
+    var day = time.getDate();
+    var month = time.getMonth();
+    var monthName = monthNames[month];
+    var year = time.getFullYear();
+    var hour = time.getHours();
+    var minute = time.getMinutes();
+    var second = time.getSeconds();
+
+    var update = dayName + ' ' + monthName + ' ' + day + ', ' + year + ' at ' + hour + ':' + minute + '.' + second;
+
+    return update;
 }
 
 // To add valid operations, map user input to the desired function
