@@ -14,5 +14,3 @@ How to use it
 
 Caveats
 1. This feature will only work on the Vanderbilt network because of security settings.
-2  My goal was to print the sharable link to the console for the user, but I had issues with the ip.address() function.
-   This is something I would like to fix, so in your review if you find my error please let me know.
