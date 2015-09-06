@@ -33,6 +33,7 @@ var argv = require('yargs')
 var sync = require('./lib/sync/sync');
 var dnodeClient = require("./lib/sync/sync-client");
 var Pipeline = require("./lib/sync/pipeline").Pipeline;
+var versions = require(".lib/versions/versions");
 
 
 var syncFile = function(fromPath,toPath){
@@ -46,43 +47,11 @@ var syncFile = function(fromPath,toPath){
     });
 };
 
-var overwritePreviousVersions = function(dirPath,prevDirPath,versions,newFile){
-    var handler = sync.getHandler(dirPath);
-    var overwrite = function(fromPath,toPath){
-        handler.readFile(fromPath,function(base64Data){
-            handler.writeFile(toPath,base64Data,function(){
-                console.log("Previous file version "+toPath+" overwritten by "+fromPath);
-            })
-        });
-    }
-
-    for (var i = 1; i < versions.length; i++) {
-        var fromPath = prevDirPath + "/" + versions[i];
-        var toPath = prevDirPath + "/" + versions[i-1];
-        overwrite(fromPath,toPath);
-    }
-    fromPath = dirPath + "/" + newFile;
-    toPath = prevDirPath + "/" + versions[version.length-1];
-    overwrite(fromPath, toPath);
-};
-
-var savePreviousVersion = function(dirPath,file) {
-    var prevDirPath = dirPath + "/.prev_versions";
-    var versions = sync.getPreviousVersions(prevDirPath,file);
-    if (versions.length < argv.v) {
-        var fromPath = dirPath + "/" + file;
-        var toPath = prevDirPath + "/(ver" + (versions.length+1) + ")" + file;
-        syncFile(fromPath,toPath);
-    } else {
-        overwritePreviousVersions(dirPath,prevDirPath,versions,file);
-    }
-};
-
 var writePipeline = new Pipeline();
 writePipeline.addAction({
     exec:function(data){
         _.each(data.srcFilesToSave, function(toPrevVersions){
-            savePreviousVersion(data.srcPath, toPrevVersions);
+            versions.savePreviousVersion(data.srcPath, toPrevVersions,argv.v);
         });
         return data;
     }
@@ -90,7 +59,7 @@ writePipeline.addAction({
 writePipeline.addAction({
     exec:function(data){
         _.each(data.trgFilesToSave, function(toPrevVersions){
-            savePreviousVersion(data.trgPath,toPrevVersions);
+            versions.savePreviousVersion(data.trgPath,toPrevVersions,argv.v);
         });
         return data;
     }
