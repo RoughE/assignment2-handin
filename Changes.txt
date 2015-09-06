@@ -1,0 +1,1 @@
+User can now tell Dropbox to not sync certain files by putting the filenames in "_.dropboxignore" file. This does not support ignoring entire folders. The dropboxignore file is not synced so the user can choose to have a local instance of a file that's different than the one that's being tracked. Each node has its own "ignore" behavior.
