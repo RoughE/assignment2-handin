@@ -1,0 +1,1 @@
+1. Add an "Ignore List", where anything listed will not be synced.
