@@ -30,28 +30,25 @@ var dnodeClient = require("./lib/sync/sync-client");
 var Pipeline = require("./lib/sync/pipeline").Pipeline;
 
 
-function WriteToFile(record) {
+function WriteToFile(record) { //write to log file
     var file = require('fs');
     var path = 'Records';
     var date = new Date();
     var timeStamp = date.toUTCString();
 
-    if (!fs.existsSync(path)) {
-
+    if (!fs.existsSync(path)) { //if a folder doesn't exist, make one
         file.mkdir(path, function (err) {
             if (err) {
                 throw err
             }
-            console.log('directory has been made');
         });
     }
 
-    record = record + ' : ' + timeStamp + "\r\n";
-    file.appendFile('Records/Record.txt', record, function (err) { //file name, data type, callback
+    record = record + ' changed on ' + timeStamp + "\r\n";
+    file.appendFile('Records/log.txt', record, function (err) { //file name, data type, callback
         if (err){
             throw err
         }
-        console.log('Data has been added to the file');
     });
 }
 

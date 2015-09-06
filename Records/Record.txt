@@ -1,4 +1,0 @@
-dnode://test-data/folder1/shalom.txt : Sun, 06 Sep 2015 18:38:12 GMT
-dnode://test-data/folder1/test.txt : Sun, 06 Sep 2015 18:38:12 GMT
-dnode://test-data/folder1/test2.txt : Sun, 06 Sep 2015 18:38:12 GMT
-dnode://test-data/folder1/TEST4.txt : Sun, 06 Sep 2015 18:38:12 GMT
