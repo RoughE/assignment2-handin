@@ -30,6 +30,7 @@ var sync = require('./lib/sync/sync');
 var dnodeClient = require("./lib/sync/sync-client");
 var Pipeline = require("./lib/sync/pipeline").Pipeline;
 
+var lastUpdate = null;
 
 var syncFile = function(fromPath,toPath){
     var srcHandler = sync.getHandler(fromPath);
@@ -37,7 +38,9 @@ var syncFile = function(fromPath,toPath){
 
     srcHandler.readFile(fromPath,function(base64Data){
         trgHandler.writeFile(toPath,base64Data,function(){
+            lastUpdate = Date.now();
             console.log("Copied "+fromPath+" to "+toPath);
+            console.log("Files updated at " + lastUpdate);
         })
     });
 }
@@ -86,14 +89,6 @@ function scheduleChangeCheck(when,repeat){
     },when);
 }
 
-function schedulePromptUserInput(when, repeat){
-    timer = setTimeout(function(){
-        getUserInput();
-
-        if(repeat){schedulePromptUserInput(when, repeat)}
-    }, when);
-}
-
 function del(fileName) {
     if(!fileName){
         console.log('Please enter a file to delete');
@@ -106,6 +101,8 @@ function del(fileName) {
     try {
         handler1.deleteFile(path1, function(){});
         handler2.deleteFile(path2, function(){});
+        lastUpdate = Date.now();
+        console.log('Files updated at ' + lastUpdate);
     } catch (err) {
         console.log(err.message);
         return;
@@ -113,7 +110,7 @@ function del(fileName) {
     console.log('Deleting ' + fileName);
 }
 
-function add(fileName) {
+function addNew(fileName) {
     if (!fileName) {
         console.log('Please enter a file to add');
         return;
@@ -137,13 +134,22 @@ function add(fileName) {
     console.log('Adding ' + fileName);
 }
 
+function lastUpdated() {
+    if (lastUpdate) {
+        console.log('Files last updated at ' + lastUpdate);
+    } else {
+        console.log('No files have been changed');
+    }
+}
+
 // To add valid operations, map user input to the desired function
 var userOps = {
     quit: null,
     test: function () { console.log('Test'); },
     func: function (in1, in2) { console.log(in1 + ' and ' + in2); },
+    addfile : addNew,
     delete: del,
-    add : add
+    update: lastUpdated
 };
 
 function getUserInput(){
@@ -181,6 +187,6 @@ function getUserInput(){
 
 dnodeClient.connect({host:argv.server, port:argv.port}, function(handler){
     sync.fsHandlers.dnode = handler;
-    schedulePromptUserInput(5000,true);
+    getUserInput();
     scheduleChangeCheck(1000,true);
 });
