@@ -15,6 +15,13 @@ should be passed as the "-clientDirectory" or "--cd" argument with the "file://"
 
 ## Installation
 
+This project requires MySQL to be installed on your machine. To load the database in the correct
+format, run the setup script:
+
+```bash
+mysql < setup_database.sql
+```
+
 To install the application globally on your machine, run the following as an administrator from
 within the directory with index.js:
 
@@ -52,6 +59,8 @@ Assume that you have the following folder structure on your machine:
 
  - folderA
     - serverFolder
+        - username1
+        - username2
     - clientFolder
 
 These are the directions to run the client and server to sync files between folder1 and folder2.
