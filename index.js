@@ -33,6 +33,10 @@ var Pipeline = require("./lib/sync/pipeline").Pipeline;
 
 
 /*
+
+// Tried to create command line interface to let user input directories instead of taking
+// them as argv, but currently not working.
+
  var rl = readline.createInterface({
  input: process.stdin,
  output: process.stdout
