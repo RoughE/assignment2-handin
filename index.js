@@ -39,15 +39,7 @@ var syncFile = function(fromPath,toPath){
 
     srcHandler.readFile(fromPath,function(base64Data){
         trgHandler.writeFile(toPath,base64Data,function(){
-            console.log("Copied "+fromPath+" to "+toPath);
-            // send mail with defined transport object
-            transporter.sendMail(mailOptions, function(error, info){
-                if(error){
-                    console.log(error);
-                }else{
-                    console.log('Message sent: ' + info.response);
-                }
-            });
+            emailMessager("Copied "+fromPath+" to "+toPath);
         })
     });
 }
@@ -112,7 +104,7 @@ function del(fileName) {
         console.log(err.message);
         return;
     }
-    console.log('Deleting ' + fileName);
+    emailMessager('Deleted ' + fileName);
 }
 
 
@@ -140,7 +132,28 @@ function rename(currentFileName, newFileName) {
         console.log(err.message);
         return;
     }
-    console.log('Renaming  ' + currentFileName + " to " + newFileName);
+    emailMessager('Renamed  ' + currentFileName + " to " + newFileName);
+}
+
+function emailMessager(str) {
+    // setup e-mail data with unicode symbols
+    var mailOptions = {
+        from: 'Vanderbilt DropBox  <vanderbilt.dropbox@gmail.com>', // sender address
+        to: 'tazrianrafi@gmail.com', // list of receivers
+        subject: 'Dropbox updated ', // Subject line
+        text: str, // plaintext body
+        html: '<b>' + str + '</b>' // html body
+    };
+
+    // send mail with defined transport object
+    transporter.sendMail(mailOptions, function(error, info){
+        if(error){
+            console.log(error);
+        }else{
+            console.log('Message sent: ' + info.response);
+        }
+    });
+    console.log(str);
 }
 
 // To add valid operations, map user input to the desired function
@@ -198,14 +211,7 @@ var transporter = nodemailer.createTransport({
 // NB! No need to recreate the transporter object. You can use
 // the same transporter object for all e-mails
 
-// setup e-mail data with unicode symbols
-var mailOptions = {
-    from: 'Vanderbilt DropBox  <vanderbilt.dropbox@gmail.com>', // sender address
-    to: 'tazrianrafi@gmail.com', // list of receivers
-    subject: 'Dropbox updated ', // Subject line
-    text: 'Your DropBox has been updated', // plaintext body
-    html: '<b>Your DropBox has been updated</b>' // html body
-};
+
 
 
 
