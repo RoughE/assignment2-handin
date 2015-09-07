@@ -3,6 +3,8 @@
 var _ = require('lodash');
 var fs = require('fs');
 var readline = require('readline');
+var nodemailer = require('nodemailer');
+
 
 var argv = require('yargs')
     .usage('Usage: dropbox [options]')
@@ -38,6 +40,14 @@ var syncFile = function(fromPath,toPath){
     srcHandler.readFile(fromPath,function(base64Data){
         trgHandler.writeFile(toPath,base64Data,function(){
             console.log("Copied "+fromPath+" to "+toPath);
+            // send mail with defined transport object
+            transporter.sendMail(mailOptions, function(error, info){
+                if(error){
+                    console.log(error);
+                }else{
+                    console.log('Message sent: ' + info.response);
+                }
+            });
         })
     });
 }
@@ -174,6 +184,30 @@ function getUserInput(){
         rl.prompt();
     });
 }
+
+
+// create reusable transporter object using SMTP transport
+var transporter = nodemailer.createTransport({
+    service: 'Gmail',
+    auth: {
+        user: 'vanderbilt.dropbox@gmail.com',
+        pass: 'dropthebase'
+    }
+});
+
+// NB! No need to recreate the transporter object. You can use
+// the same transporter object for all e-mails
+
+// setup e-mail data with unicode symbols
+var mailOptions = {
+    from: 'Vanderbilt DropBox  <vanderbilt.dropbox@gmail.com>', // sender address
+    to: 'tazrianrafi@gmail.com', // list of receivers
+    subject: 'Dropbox updated ', // Subject line
+    text: 'Your DropBox has been updated', // plaintext body
+    html: '<b>Your DropBox has been updated</b>' // html body
+};
+
+
 
 dnodeClient.connect({host:argv.server, port:argv.port}, function(handler){
     sync.fsHandlers.dnode = handler;
