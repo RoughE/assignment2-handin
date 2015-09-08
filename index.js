@@ -84,6 +84,9 @@ function scheduleChangeCheck(when,repeat){
     },when);
 }
 
+
+
+
 dnodeClient.connect({host:argv.server, port:argv.port}, function(handler){
     sync.fsHandlers.dnode = handler;
     scheduleChangeCheck(1000,true);
